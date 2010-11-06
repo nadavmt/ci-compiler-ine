@@ -57,7 +57,7 @@ public class Compiler
     		{
     			int lineNumber = e.getLineNumber() + 1;
     			
-    			String line = (lineNumber != -1) ? lineNumber + ": " : "";
+    			String line = (lineNumber != 0) ? lineNumber + ": " : "";
     			String message = e.getMessage();
     			
     			System.out.println(line + "Lexical error: " + message);
