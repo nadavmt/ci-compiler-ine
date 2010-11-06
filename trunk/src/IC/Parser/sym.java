@@ -65,57 +65,60 @@ public class sym {
   
   public static String tokenName(int tokenValue)
   {
+	  
 	  switch (tokenValue) {
-		  case 0: return "EOF";
-		  case 1: return "LP";
-		  case 2: return "RP";
-		  case 3: return "LB";
-		  case 4: return "RB";
-		  case 5: return "LCBR";
-		  case 6: return "RCBR";
-		  case 7: return "ASSIGN";  
-		  case 8: return "DIVIDE";
-		  case 9: return "MOD";
-		  case 10: return "MULTIPLY";
-		  case 11: return "PLUS";
-		  case 12: return "MINUS";
-		  case 13: return "EQUAL";
-		  case 14: return "NEQUAL";
-		  case 15: return "GT";
-		  case 16: return "GTE";
-		  case 17: return "LT";
-		  case 18: return "LTE";
-		  case 19: return "LAND";
-		  case 20: return "LNEG";
-		  case 21: return "LOR";
-		  case 22: return "DOT";
-		  case 23: return "COMMA";
-		  case 24: return "SEMI";
-		  case 25: return "VOID";
-		  case 26: return "BOOLEAN";
-		  case 27: return "INT";
-		  case 28: return "INTEGER";
-		  case 29: return "STRING";
-		  case 30: return "QUOTA";
-		  case 31: return "STATIC";
-		  case 32: return "IF";
-		  case 33: return "ELSE";
-		  case 34: return "WHILE";
-		  case 35: return "CONTINUE";
-		  case 36: return "BREAK";
-		  case 37: return "RETURN";
-		  case 38: return "CLASS";
-		  case 39: return "CLASS_ID";
-		  case 40: return "ID";
-		  case 41: return "EXTENDS";
-		  case 42: return "THIS";
-		  case 43: return "NEW";
-		  case 44: return "FALSE";
-		  case 45: return "TRUE";
-		  case 46: return "NULL";
-		  case 47: return "LENGTH";
-		  
+		  case EOF: return "EOF";
+		  case LP: return "LP";
+		  case RP: return "RP";
+		  case LB: return "LB";
+		  case RB: return "RB";
+		  case LCBR: return "LCBR";
+		  case RCBR: return "RCBR";
+		  case ASSIGN: return "ASSIGN";  
+		  case DIVIDE: return "DIVIDE";
+		  case MOD: return "MOD";
+		  case MULTIPLY: return "MULTIPLY";
+		  case PLUS: return "PLUS";
+		  case MINUS: return "MINUS";
+		  case EQUAL: return "EQUAL";
+		  case NEQUAL: return "NEQUAL";
+		  case GT: return "GT";
+		  case GTE: return "GTE";
+		  case LT: return "LT";
+		  case LTE: return "LTE";
+		  case LAND: return "LAND";
+		  case LNEG: return "LNEG";
+		  case LOR: return "LOR";
+		  case DOT: return "DOT";
+		  case COMMA: return "COMMA";
+		  case SEMI: return "SEMI";
+		  case VOID: return "VOID";
+		  case BOOLEAN: return "BOOLEAN";
+		  case INT: return "INT";
+		  case INTEGER: return "INTEGER";
+		  case STRING: return "STRING";
+		  case QUOTE: return "QUOTE";
+		  case STATIC: return "STATIC";
+		  case IF: return "IF";
+		  case ELSE: return "ELSE";
+		  case WHILE: return "WHILE";
+		  case CONTINUE: return "CONTINUE";
+		  case BREAK: return "BREAK";
+		  case RETURN: return "RETURN";
+		  case CLASS: return "CLASS";
+		  case CLASS_ID: return "CLASS_ID";
+		  case ID: return "ID";
+		  case EXTENDS: return "EXTENDS";
+		  case THIS: return "THIS";
+		  case NEW: return "NEW";
+		  case FALSE: return "FALSE";
+		  case TRUE: return "TRUE";
+		  case NULL: return "NULL";
+		  case LENGTH: return "LENGTH";
 		  default: return null;
 	  }
+		    
+	  
   }
+   
 }

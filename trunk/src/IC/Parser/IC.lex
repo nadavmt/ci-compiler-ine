@@ -1,4 +1,4 @@
-ffapackage IC.Parser;
+package IC.Parser;
 
 %%
 
@@ -8,22 +8,26 @@ ffapackage IC.Parser;
 %type Token
 %line
 %scanerror LexicalError
-%state IN_QUOTA
+%state IN_QUOTE
 %state LONG_COMMENT
 %state LONG_COMMENT_AFTER_STAR
 %state ONE_LINE_COMMENT
 %{
 	private int commentStart=0;//will hold the line in which the LONG_COMMENT started. for error description
-	private String returnString = NULL;
-	private String errorString = NULL;   
-}%
+	private String returnString = null;
+	private String errorString = null;
+	private boolean allowEOF = true; //will be a flag if it's legal to get to the EOF
+	private int illegalLine = 0;   
+%}
  
- %eofval {
- 			<IN_QUOTA> { throw new LexicalError(yyline,"must close String quota before end of file");}/*
- 			<LONG_COMMENT> {throw new LexicalError(commentStart, "cannot end file without closing comment");}
- 			<LONG_COMMENT_AFTER_STAR> {throw new LexicalError(commentStart, "cannot end file without closing comment");}
- 			<YYINITIAL> { return new Token(yyline,sym.EOF);}
- %eofval}						
+%eofval{	
+ 		if (allowEOF)
+ 			return new Token(yyline,sym.EOF);
+ 		else
+ 			throw new LexicalError(illegalLine,"unclosed QUOTE/COMMENT");
+ 		
+ 							
+%eofval}						
  
 DIGIT = [0-9]
 CAPITAL = [A-Z]
@@ -31,11 +35,11 @@ SMALL = [a-z]
 LETTER = {CAPITAL}|{SMALL}|[_]
 ALPHA = {DIGIT}|{LETTER}
 NEWLINE = \n
-WHITESPACE = ([ \n\t\r])+ //add space \b is from the PPT
+WHITESPACE = ([ \n\t\r])+ 
 NUMBER = ({DIGIT})+	
 IDENTIFIER = ({SMALL})+({LETTER})*
 CLASS_IDENTIFIER = ({CAPITAL})+({LETTER})*
-QUOTA = ["]
+QUOTE = [\"]
 
 %%
 
@@ -43,16 +47,20 @@ QUOTA = ["]
 /****one line comments*****/
 <YYINITIAL> "//" {yybegin(ONE_LINE_COMMENT);} 
 <ONE_LINE_COMMENT> . {}
-<ONE_LINE_COMMENT> "\n" {yybegin(YYINITIAL);}
+<ONE_LINE_COMMENT> {NEWLINE} {yybegin(YYINITIAL);}
 
  /****long comments****/
-<YYINITIAL> "/*" {
+<YYINITIAL> "/*" { 
+					illegalLine = yyline;
+					allowEOF = false;
 					commentStart = yyline;
-					yybegin(LONG_COMMENT};
-				 }
+					yybegin(LONG_COMMENT); 
+					}
 <LONG_COMMENT> "*" {yybegin(LONG_COMMENT_AFTER_STAR);}
 <LONG_COMMENT> [^*] {}
 <LONG_COMMENT_AFTER_STAR> "/" {
+								allowEOF = true;
+								illegalLine = 0;
 								commentStart = 0;
 								yybegin(YYINITIAL);
 								}
@@ -60,69 +68,76 @@ QUOTA = ["]
 <LONG_COMMENT_AFTER_STAR> [^/*] {yybegin(LONG_COMMENT);}
 
 /****brackets,parenthesis,curly brackets****/
-<YYINITIAL> "(" { return new Token(sym.LP,yyline);}
-<YYINITIAL> ")" { return new Token(sym.RP,yyline);}
-<YYINITIAL> "[" { return new Token(sym.LB,yyline);}
-<YYINITIAL> "]" { return new Token(sym.RB,yyline);}
-<YYINITIAL> "{" { return new Token(sym.LCBR,yyline);}
-<YYINITIAL> "}" { return new Token(sym.RCBR,yyline);} 
+<YYINITIAL> "(" { return new Token(yyline,sym.LP);}
+<YYINITIAL> ")" { return new Token(yyline,sym.RP);}
+<YYINITIAL> "[" { return new Token(yyline,sym.LB);}
+<YYINITIAL> "]" { return new Token(yyline,sym.RB);}
+<YYINITIAL> "{" { return new Token(yyline,sym.LCBR);}
+<YYINITIAL> "}" { return new Token(yyline,sym.RCBR);} 
 
 /****mathematics operations****/
-<YYINITIAL> "/" {return new Token(sym.DIVIDE,yyline);	}
-<YYINITIAL> "%" {return new Token(sym.MOD,yyline);} 
-<YYINITIAL> "*" {return new Token(sym.MULTIPLY,yyline);	}
-<YYINITIAL> "+" {return new Token(sym.PLUS,yyline); }
-<YYINITIAL> "=" { return new Token(sym.ASSIGN,yyline); }
+<YYINITIAL> "/" {return new Token(yyline,sym.DIVIDE);	}
+<YYINITIAL> "%" {return new Token(yyline,sym.MOD);} 
+<YYINITIAL> "*" {return new Token(yyline,sym.MULTIPLY);	}
+<YYINITIAL> "+" {return new Token(yyline,sym.PLUS); }
+<YYINITIAL> "=" { return new Token(yyline,sym.ASSIGN); }
 
 /****unary minus****/
 <YYINITIAL> "-"[0]+({NUMBER})+ { throw new LexicalError(yyline,"no trailing zeroes");}
 <YYINITIAL> "-"({NUMBER})+ { 	try
-								{return new Token (sym.INTEGER,yyline,Integer.parseInt(yytext()));}
+								{return new Token (yyline,sym.INTEGER,Integer.parseInt(yytext()));}
 								catch (NumberFormatException e) 
 									{throw new LexicalError(yyline,"Integer out of range");}
 							}
 							
 /****logical operations****/
-<YYINITIAL> "-" {return new Token(sym.MINUS,yyline); } 
-<YYINITIAL> "!=" {return new Token(sym.NEQUAL, yyline);}
-<YYINITIAL> "==" {return new Token(sym.EQUAL, yyline);}
-<YYINITIAL> ">=" {return new Token(sym.GTE, yyline);}
-<YYINITIAL> ">" {return new Token(sym.GT, yyline);}
-<YYINITIAL> "<=" {return new Token(sym.LTE, yyline);}
-<YYINITIAL> "<" {return new Token(sym.LT, yyline);}
-<YYINITIAL> "!" {return new Token(sym.LNEG, yyline);}
-<YYINITIAL> "&&" {return new Token(sym.LAND, yyline);}
-<YYINITIAL> "||" {return new Token(sym.LOR, yyline);}
+<YYINITIAL> "-" {return new Token(yyline,sym.MINUS); } 
+<YYINITIAL> "!=" {return new Token(yyline,sym.NEQUAL);}
+<YYINITIAL> "==" {return new Token(yyline,sym.EQUAL);}
+<YYINITIAL> ">=" {return new Token(yyline,sym.GTE);}
+<YYINITIAL> ">" {return new Token(yyline,sym.GT);}
+<YYINITIAL> "<=" {return new Token(yyline,sym.LTE);}
+<YYINITIAL> "<" {return new Token(yyline,sym.LT);}
+<YYINITIAL> "!" {return new Token(yyline,sym.LNEG);}
+<YYINITIAL> "&&" {return new Token(yyline,sym.LAND);}
+<YYINITIAL> "||" {return new Token(yyline,sym.LOR);}
  
  /*positive numbers*/
 <YYINITIAL> [0]+({NUMBER})+ { throw new LexicalError(yyline,"no trailing zeroes");}
 <YYINITIAL> ({NUMBER})+ { 	try
-								{return new Token (sym.INTEGER,yyline,Integer.parseInt(yytext()));}
-								catch
+								{return new Token (yyline,sym.INTEGER,Integer.parseInt(yytext()));}
+								catch (NumberFormatException e)
 									{throw new LexicalError(yyline,"Integer out of range");}
 						}
 
 /****quoted string****/						
 
-<YYINITIAL> {QUOTA} {	returnString = "\"";
-						yybegin(IN_QUOTA);
+<YYINITIAL> {QUOTE} {	
+						illegalLine = yyline;
+						allowEOF = false;
+						returnString = "\"";
+						yybegin(IN_QUOTE);
 					}
-<IN_QUOTA>	"\n" { returnString.concat("\n");}
-<IN_QUOTA>	"\t" { returnString.concat("\t");}
-<IN_QUOTA>	"\"" { returnString.concat("\"");}
-<IN_QUOTA>	"" { returnString.concat("\"");}
-<IN_QUOTA>	. 	{ 
+<IN_QUOTE>	{QUOTE} { 
+						allowEOF = true;
+						illegalLine = 0;
+						yybegin(YYINITIAL);
+						returnString.concat("\"");
+						return new Token(yyline,sym.QUOTE,returnString);
+					}
+<IN_QUOTE>	{NEWLINE} { throw new LexicalError(yyline,"must close String QUOTE before end of line");}
+<IN_QUOTE>	"\\n" { returnString.concat("\n");}
+<IN_QUOTE>	"\\t" { returnString.concat("\t");}
+<IN_QUOTE>	"\\\"" { returnString.concat("\"");}
+<IN_QUOTE>	. 	{ 
 					if ((yytext().charAt(0)>=32) && (yytext().charAt(0)<=126))
 						returnString.concat(yytext());
 					else
-						throw new LexicalError(yyline,"illegal character '%c'",yytext().charAt(0));
+						{	errorString = "illegal character for string '" +yytext().charAt(0) + "'"; 
+							throw new LexicalError(yyline,errorString);
+						}
 				}
-<IN_QUOTA>	{NEWLINE} { throw new LexicalError(yyline,"must close String quota before end of line");}
-<IN_QUOTA>	{QUOTA} { 
-						yybegin(YYINITIAL);
-						returnString.concat("\"");
-						return new Token(sym.QUOTA,yyline,returnString);
-					}
+
 
 /****annotations****/
 <YYINITIAL> "." {return new Token(yyline,sym.DOT);}
@@ -138,7 +153,7 @@ QUOTA = ["]
 <YYINITIAL> "if" {return new Token(yyline,sym.IF);}
 <YYINITIAL> "else" {return new Token(yyline,sym.ELSE);}
 <YYINITIAL> "while" {return new Token(yyline,sym.WHILE);}
-<YYINITIAL> "continue" {return new Token(yyline,sym.CONITUE);}
+<YYINITIAL> "continue" {return new Token(yyline,sym.CONTINUE);}
 <YYINITIAL> "break" {return new Token(yyline,sym.BREAK);}
 <YYINITIAL> "return" {return new Token(yyline,sym.RETURN);}
 <YYINITIAL> "class" {return new Token(yyline,sym.CLASS);}
@@ -151,8 +166,8 @@ QUOTA = ["]
 <YYINITIAL> "length" {return new Token(yyline,sym.LENGTH);}  
      				 
 /****identifier****/
-<YYINITIAL> ({SMALL})+({ALPHA})* {return new Token(sym.ID,yyline,yytext());}
-<YYINITIAL> ({CAPITAL})+({ALPHA})* {return new Token(sym.CLASS_ID,yyline,yytext());}
+<YYINITIAL> ({SMALL})+({ALPHA})* {return new Token(yyline,sym.ID,yytext());}
+<YYINITIAL> ({CAPITAL})+({ALPHA})* {return new Token(yyline,sym.CLASS_ID,yytext());}
 <YYINITIAL> ({DIGIT})+({LETTER})+ {throw new LexicalError(yyline,"identifiers cannot begin with digits");}
 
 /****illegal charecters - if we got here it means it didn't fit any prior one****/
