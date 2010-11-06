@@ -38,24 +38,24 @@ public class Compiler
     		try
     		{
 	    		Lexer lexer = new Lexer(fis);
-	    		Token token = lexer.next_token();
+	    		Token token = null;
 	    		
 	    		do
 	    		{
-	    			int line = token.lineNumber+1;
+	    			token = lexer.next_token();
+	    			
+	    			int line = token.lineNumber + 1;
 	    			
 	    			String tokenName = sym.tokenName(token.sym);
 	    			String tokenVal = (token.value != null) ? "(" + token.value.toString() + ")" : "";
 	    			
 	    			System.out.println(line + ": " + tokenName + tokenVal);
-	    			
-	    			token = lexer.next_token();
 	    		}
 	    		while (token.sym != sym.EOF);
     		}
     		catch (LexicalError e)
     		{
-    			int lineNumber = e.getLineNumber()+1;
+    			int lineNumber = e.getLineNumber() + 1;
     			
     			String line = (lineNumber != -1) ? lineNumber + ": " : "";
     			String message = e.getMessage();
