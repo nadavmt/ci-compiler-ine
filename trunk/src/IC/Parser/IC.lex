@@ -1,4 +1,4 @@
-package IC.Parser;
+ffapackage IC.Parser;
 
 %%
 
