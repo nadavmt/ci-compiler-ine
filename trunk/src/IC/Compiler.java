@@ -42,7 +42,7 @@ public class Compiler
 	    		
 	    		do
 	    		{
-	    			int line = token.lineNumber;
+	    			int line = token.lineNumber+1;
 	    			
 	    			String tokenName = sym.tokenName(token.sym);
 	    			String tokenVal = (token.value != null) ? "(" + token.value.toString() + ")" : "";
@@ -55,7 +55,7 @@ public class Compiler
     		}
     		catch (LexicalError e)
     		{
-    			int lineNumber = e.getLineNumber();
+    			int lineNumber = e.getLineNumber()+1;
     			
     			String line = (lineNumber != -1) ? lineNumber + ": " : "";
     			String message = e.getMessage();

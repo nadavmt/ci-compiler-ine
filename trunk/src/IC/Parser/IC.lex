@@ -17,7 +17,8 @@ package IC.Parser;
 	private String returnString = null;
 	private String errorString = null;
 	private boolean allowEOF = true; //will be a flag if it's legal to get to the EOF
-	private int illegalLine = 0;   
+	private int illegalLine = 0;  
+	private boolean NegativeNumber = false; 
 %}
  
 %eofval{	
@@ -43,7 +44,7 @@ QUOTE = [\"]
 
 %%
 
-<YYINITIAL> {WHITESPACE} {}
+<YYINITIAL> {WHITESPACE} {NegativeNumber = false;}
 /****one line comments*****/
 <YYINITIAL> "//" {yybegin(ONE_LINE_COMMENT);} 
 <ONE_LINE_COMMENT> . {}
@@ -83,15 +84,18 @@ QUOTE = [\"]
 <YYINITIAL> "=" { return new Token(yyline,sym.ASSIGN); }
 
 /****unary minus****/
-<YYINITIAL> "-"[0]+({NUMBER})+ { throw new LexicalError(yyline,"no trailing zeroes");}
+/*<YYINITIAL> "-"[0]+({NUMBER})+ { throw new LexicalError(yyline,"no trailing zeroes");}
 <YYINITIAL> "-"({NUMBER})+ { 	try
 								{return new Token (yyline,sym.INTEGER,Integer.parseInt(yytext()));}
 								catch (NumberFormatException e) 
 									{throw new LexicalError(yyline,"Integer out of range");}
 							}
-							
+	*/						
 /****logical operations****/
-<YYINITIAL> "-" {return new Token(yyline,sym.MINUS); } 
+<YYINITIAL> "-" {
+					NegativeNumber = true;
+					return new Token(yyline,sym.MINUS); 
+				} 
 <YYINITIAL> "!=" {return new Token(yyline,sym.NEQUAL);}
 <YYINITIAL> "==" {return new Token(yyline,sym.EQUAL);}
 <YYINITIAL> ">=" {return new Token(yyline,sym.GTE);}
@@ -105,7 +109,11 @@ QUOTE = [\"]
  /*positive numbers*/
 <YYINITIAL> [0]+({NUMBER})+ { throw new LexicalError(yyline,"no trailing zeroes");}
 <YYINITIAL> ({NUMBER})+ { 	try
-								{return new Token (yyline,sym.INTEGER,Integer.parseInt(yytext()));}
+								{
+								returnString = (NegativeNumber)? "-" :  "";
+								returnString+=yytext();
+								Integer.parseInt(returnString);
+								return new Token (yyline,sym.INTEGER,Integer.parseInt(yytext()));}
 								catch (NumberFormatException e)
 									{throw new LexicalError(yyline,"Integer out of range");}
 						}
@@ -122,16 +130,16 @@ QUOTE = [\"]
 						allowEOF = true;
 						illegalLine = 0;
 						yybegin(YYINITIAL);
-						returnString.concat("\"");
+						returnString+="\"";
 						return new Token(yyline,sym.QUOTE,returnString);
 					}
 <IN_QUOTE>	{NEWLINE} { throw new LexicalError(yyline,"must close String QUOTE before end of line");}
-<IN_QUOTE>	"\\n" { returnString.concat("\n");}
-<IN_QUOTE>	"\\t" { returnString.concat("\t");}
-<IN_QUOTE>	"\\\"" { returnString.concat("\"");}
+<IN_QUOTE>	"\\n" { returnString +="\\n";}
+<IN_QUOTE>	"\\t" { returnString +="\\t";}
+<IN_QUOTE>	"\\\"" { returnString+="\"";}
 <IN_QUOTE>	. 	{ 
 					if ((yytext().charAt(0)>=32) && (yytext().charAt(0)<=126))
-						returnString.concat(yytext());
+						returnString +=yytext();
 					else
 						{	errorString = "illegal character for string '" +yytext().charAt(0) + "'"; 
 							throw new LexicalError(yyline,errorString);
