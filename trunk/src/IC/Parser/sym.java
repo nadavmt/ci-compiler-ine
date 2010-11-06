@@ -65,7 +65,6 @@ public class sym {
   
   public static String tokenName(int tokenValue)
   {
-	  
 	  switch (tokenValue) {
 		  case 0: return "EOF";
 		  case 1: return "LP";
@@ -115,10 +114,8 @@ public class sym {
 		  case 45: return "TRUE";
 		  case 46: return "NULL";
 		  case 47: return "LENGTH";
+		  
 		  default: return null;
 	  }
-		    
-	  
   }
-   
 }

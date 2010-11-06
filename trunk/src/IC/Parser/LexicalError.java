@@ -14,6 +14,7 @@ public class LexicalError extends Exception
     public LexicalError(int line, String message)
     {
     	super(message);
+    	
     	this.lineNumber = line;
     }
     
@@ -21,7 +22,5 @@ public class LexicalError extends Exception
     {
     	return lineNumber;
     }
-    
-    
 }
 
