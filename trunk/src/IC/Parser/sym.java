@@ -30,7 +30,7 @@ public class sym
 	public static final int LOR = 21;
 	
 	public static final int DOT = 22;
-	public static final int COMMA = 23 ;
+	public static final int COMMA = 23;
 	public static final int SEMI = 24;
 	
 	public static final int VOID = 25;
@@ -114,6 +114,7 @@ public class sym
 			case TRUE: return "TRUE";
 			case NULL: return "NULL";
 			case LENGTH: return "LENGTH";
+			
 			default: return null;
 		}
 	}
