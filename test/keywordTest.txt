@@ -1,4 +1,4 @@
-class Test extends PreviousTests {
+class Test extends Previous_Tests {
 	static boolean test (int i, string x)
 	{
 		int z = i%2;
