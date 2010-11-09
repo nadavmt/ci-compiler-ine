@@ -189,8 +189,8 @@ QUOTE = [\"]
 <YYINITIAL> "length" { return new Token(yyline, sym.LENGTH); }  
      				 
 /**** identifier ****/
-<YYINITIAL> ({SMALL})+({ALPHA})* { return new Token(yyline, sym.ID, yytext()); }
-<YYINITIAL> ({CAPITAL})+({ALPHA})* { return new Token(yyline, sym.CLASS_ID, yytext()); }
+<YYINITIAL> {IDENTIFIER} { return new Token(yyline, sym.ID, yytext()); }
+<YYINITIAL> {CLASS_IDENTIFIER} { return new Token(yyline, sym.CLASS_ID, yytext()); }
 <YYINITIAL> ({DIGIT})+({LETTER})+ { throw new LexicalError(yyline, "identifiers cannot begin with digits"); }
 
 /**** illegal charecters - if we got here it means it didn't fit any prior one ****/
