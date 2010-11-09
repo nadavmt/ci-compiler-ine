@@ -1,0 +1,36 @@
+class Test extends PreviousTests {
+	static boolean test (int i, string x)
+	{
+		int z = i%2;
+		int q = i/4;
+		y= "test";
+		if (x!=null)
+			return (i==x.length);
+		else
+			return (this.BS==false);
+	}
+
+	void secondTest ()
+	{
+		int i=2;
+		int x = 4;
+		while (x<=9)
+		{
+			if (x%4==2)
+			{
+				continue;
+			}
+				boolean y = new TestClass(x);
+				boolean z = true;
+				i=(x*7)/2;
+				if (i>=100)
+				{
+					break;
+				}
+		}
+	}
+
+			
+		
+			
+/* keywords Check */

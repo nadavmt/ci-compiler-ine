@@ -1,0 +1,8 @@
+class Test {
+	boolean test (int i, string x)
+		{
+			x="test";
+			return (i==2);
+		}
+/*this program should throw an error of unclosed comment
+and the line number of the error should be the line in which the comment started (7)
