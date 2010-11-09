@@ -17,7 +17,7 @@ package IC.Parser;
 	private String returnString = null;
 	private String errorString = null;
 	private boolean allowEOF = true; // will be a flag if it's legal to get to the EOF
-	private int illegalLine = 0;
+	private int illegalLine = 0; // saves the line in which the comment/quote started for error reporting
 	private boolean negativeNumber = false; 
 %}
  
