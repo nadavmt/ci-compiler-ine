@@ -1,7 +1,7 @@
 class Test extends Previous_Tests {
 	static boolean test (int i, string x)
 	{
-		int z = i%2;
+		int z = i%2-5;
 		int q = i/4;
 		y= "test";
 		if (x!=null)

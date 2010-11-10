@@ -17,8 +17,7 @@ package IC.Parser;
 	private String returnString = null;
 	private String errorString = null;
 	private boolean allowEOF = true; // will be a flag if it's legal to get to the EOF
-	private int illegalLine = 0; // saves the line in which the comment/quote started for error reporting
-	private boolean negativeNumber = false; 
+	private int illegalLine = 0; // saves the line in which the comment/quote started for error reporting 
 %}
  
 %eofval{	
@@ -46,7 +45,7 @@ QUOTE = [\"]
 
 %%
 
-<YYINITIAL> {WHITESPACE} { negativeNumber = false; }
+<YYINITIAL> {WHITESPACE} { }
 
 /**** one line comments *****/
 <YYINITIAL> "//" { yybegin(ONE_LINE_COMMENT); } 
@@ -86,25 +85,8 @@ QUOTE = [\"]
 <YYINITIAL> "+" { return new Token(yyline, sym.PLUS); }
 <YYINITIAL> "=" { return new Token(yyline, sym.ASSIGN); }
 
-/**** unary minus ****/
-/*<YYINITIAL> "-"[0]+({NUMBER})+ { throw new LexicalError(yyline, "no leading zeros"); }
-<YYINITIAL> "-"({NUMBER})+ {
-								try
-								{
-									return new Token (yyline, sym.INTEGER, Integer.parseInt(yytext()));
-								}
-								catch (NumberFormatException e)
-								{
-									throw new LexicalError(yyline, "integer out of range");
-								}
-						   }
-	*/
-
 /**** logical operations ****/
-<YYINITIAL> "-" {
-					negativeNumber = true;
-					return new Token(yyline, sym.MINUS); 
-				}
+<YYINITIAL> "-" { return new Token(yyline, sym.MINUS);	}
 <YYINITIAL> "!=" { return new Token(yyline, sym.NEQUAL); }
 <YYINITIAL> "==" { return new Token(yyline, sym.EQUAL); }
 <YYINITIAL> ">=" { return new Token(yyline, sym.GTE); }
@@ -119,10 +101,8 @@ QUOTE = [\"]
 <YYINITIAL> [0]+({NUMBER})+ { throw new LexicalError(yyline, "no leading zeros");}
 <YYINITIAL> ({NUMBER})+ {
 							try
-							{
-								returnString = ((negativeNumber) ? "-" : "");
-								returnString += yytext();
-								Integer.parseInt(returnString);
+							{								
+								Integer.parseInt(yytext());
 								return new Token(yyline, sym.INTEGER, Integer.parseInt(yytext()));
 							}
 							catch (NumberFormatException e)
