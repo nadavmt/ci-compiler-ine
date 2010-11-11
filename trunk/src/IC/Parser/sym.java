@@ -1,5 +1,10 @@
 package IC.Parser;
 
+/**
+ * Contains the constants used to identify the types of tokens returned
+ * by the lexical analyzer. Also contains a method for getting the String
+ * representation of a given token.
+ */
 public class sym
 {
 	public static final int EOF = 0;
@@ -62,6 +67,12 @@ public class sym
 	
 	public static final int LENGTH = 47;
 
+	/**
+	 * Returns the String representation for a given token ID.
+	 * 
+	 * @param tokenValue The token ID for which the description is wanted
+	 * @return The given token's String value
+	 */
 	public static String tokenName(int tokenValue)
 	{
 		switch (tokenValue)

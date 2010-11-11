@@ -10,10 +10,23 @@ import IC.Parser.LexicalError;
 import IC.Parser.Token;
 import IC.Parser.sym;
 
+/**
+ * Breaks down a given source file to tokens using a lexical analyzer.
+ * Outputs a list of the tokens along with their line-numbers and their
+ * values (where applicable).
+ */
 public class Compiler
 {
+	/**
+	 * The entry point for the compiler.
+	 * Receives one single argument - a source file to analyze.
+	 * 
+	 * @param args Input filename
+	 */
     public static void main(String[] args)
     {
+    	// Check that a filename was provided
+    	
     	if (args.length != 1)
     	{
     		System.err.println("Usage: java IC.Compiler <file.ic>");
@@ -25,6 +38,8 @@ public class Compiler
     	
     	try
     	{
+    		// Try to open the file for reading
+    		
     		fis = new FileInputStream(file);
     	}
     	catch (FileNotFoundException e)
@@ -37,11 +52,16 @@ public class Compiler
     	{
     		try
     		{
+    			// The lexical analyzer which breaks down the source file into tokens.
+    			
 	    		Lexer lexer = new Lexer(fis);
 	    		Token token = null;
 	    		
 	    		do
 	    		{
+	    			// Get the next token from the lexical analyzer, print it to the screen
+	    			// with its line-number and value (if one exists).
+	    			
 	    			token = lexer.next_token();
 	    			
 	    			int line = token.lineNumber + 1;
@@ -55,6 +75,9 @@ public class Compiler
     		}
     		catch (LexicalError e)
     		{
+    			// Thrown by the lexical analyzer when it encounters a lexical error.
+    			// Print the error and the line in which it appeared.
+    			
     			int lineNumber = e.getLineNumber() + 1;
     			
     			String line = (lineNumber != 0) ? lineNumber + ": " : "";
@@ -65,6 +88,8 @@ public class Compiler
     		}
     		catch (IOException e)
     		{
+    			// Any IO error that might occur while reading from the file-stream.
+    			
     			System.err.println("Unknown IO exception.");
     			return;
     		}
@@ -72,6 +97,8 @@ public class Compiler
     		{
     			try
     			{
+    				// Finally, close the file-stream before exiting.
+    				
     				fis.close();
     			}
     			catch (IOException e) {}
