@@ -1,8 +1,17 @@
 package IC.Parser;
 
-public class LexicalError extends Exception
+public class LexicalError extends ICException
 {
-    public LexicalError(String message) {
-     // do something
+	// ctor with no line number
+	public LexicalError(String message)
+	{
+		super(message);
+	}
+	
+	// ctor
+    public LexicalError(int line, String message)
+    {
+    	// call exception's ctor
+    	super(line, message);
     }
 }
