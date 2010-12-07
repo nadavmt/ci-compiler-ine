@@ -5,15 +5,455 @@ import IC.AST.*;
 ////////////////////////////////////////////
 // Symbol list (terminals and non-terminals)
 
-nonterminal Program Program;
+non terminal Program Program;
+non terminal ICClass ICClass;
+non terminal List<ICClass> ICClasses;
+non terminal FieldOrMethod FieldOrMethod;
+non terminal List<Field> Fields;
+non terminal List<String> IDs;
+non terminal Method Method; 
+non terminal List<Formal> Formals;
+non terminal Type Type;
+non terminal Type ReturnType;
+non terminal Statement Statement;
+non terminal StatementsBlock StatementsBlock;
+non terminal Location Location;
+non terminal Expression Expression;
+non terminal List<Expression> ExpressionList;
+non terminal Call Call;
+non terminal StaticCall StaticCall;
+non terminal VirtualCall VirtualCall;
+non terminal BinaryOp BinaryOp;
+non terminal UnaryOp UnaryOp;
+non terminal Literal Literal;
 
-terminal         ASSIGN;
+
+terminal LP,RP,LB,RB,LCBR,RCBR;
+terminal ASSIGN,DIVIDE,MOD,MULTIPLY,PLUS,MINUS,UMINUS;
+terminal EQUAL,NEQUAL,GT,GTE,LT,LTE;
+terminal LAND,LNEG,LOR;
+terminal DOT,COMMA,SEMI;
 terminal Integer INTEGER;
+terminal VOID,BOOLEAN,INT,STRING,QUOTE,STATIC;
+terminal IF,ELSE,WHILE,CONTINUE,BREAK,RETURN;
+terminal CLASS,CLASS_ID,ID;
+terminal EXTENDS,THIS,NEW;
+terminal FALSE,TRUE,NULL;
+terminal LENGTH;
 
 //////////////////////////
 // Precedence declarations
+precedence left PLUS,MINUS;
+precedence left MOD,MULTIPLY,DEVIDE;
+precedence left UMINUS;
 
 //////////////
 // The grammar
 
-program ::= classDecl*
+//this handles the class list declaration
+Program ::= ICClasses:classList
+	{:
+		RESULT = new Program(classList);
+	:};
+	
+ICClasses ::= ICClass:class
+	{:	
+		List<ICClass> cl = new ArrayList<ICClass>();
+		cl.add(new ICCLASS(class);
+		RESULT = cl;
+	:}
+	| ICClasses:classList ICClass:class
+	{:
+		cl.add(class);
+		RESULT = cl;
+	:};  
+
+//class declaration
+ICClass ::= CLASS CLASS_ID:className LCBR RCBR
+	{:
+		RESULT = new ICClass(getLine(),className,new ArrayList<Field>,new ArrayList<Method>);
+	:}
+ 	| CLASS CLASS_ID:className EXTENDS:extendedClass CLASS_ID LCBR RCBR
+ 	{:
+ 		RESULT = new ICClass(getLine(),className,extendedClass, new ArrayList<Field>,new ArrayList<Method>);
+ 	:}
+	| CLASS CLASS_ID:className LCBR FieldOrMethod:classContent RCBR
+	{:
+		RESULT = new ICClass(getLine(),className,classContent.getFields(),classContent.getMethods());	
+	:}
+	| CLASS CLASS_ID:className EXTENDS CLASS_ID:extendedClass LCBR FieldOrMethod:classContent RCBR
+	{:
+		RESULT = new ICClass(getLine(),className,extendedClass,classContent.getFields(),classContent.getMethods());
+	:};
+	
+	
+//class content - fields or content	
+FieldOrMethod ::= Fields:fields
+	{:
+		FieldOrMethod fom = new FieldOrMethod();
+		fom.addFields(fields);
+		RESULT = fom;
+	:} 
+	|Method:method
+	{:
+		FieldOrMethod fom = new FieldOrMethod();
+		fom.addMethod(method);
+		RESULT = fom;
+	:}
+	| FieldOrMethod:classContent Fields:fields
+	{:
+		classContent.addFields(fields);
+		RESULT = clssContent;
+	:}
+	| FieldOrMethod:classContent Method:method 
+	{:
+		classContent.addMethod(method);
+		RESULT = clssContent;
+	:};
+
+
+// fields
+Fields ::= Type:type IDs:ids SEMI
+	{:
+		List<Field> list = new ArrayList<Field>();
+		for (String name : ids)
+		{
+			list.add(new Field(type, name));
+		}
+		RESULT = list;
+	:};
+
+// ids
+IDs ::= ID:id
+	{:
+		List<String> list = new ArrayList<String>();
+		list.add(id);
+		RESULT = list;
+	:}
+	| IDs:ids COMMA ID:id
+	{:
+		// TODO: make sure id.value is the value of the id and not just id
+		ids.add(id);
+		RESULT = ids;
+	:};
+
+
+// methods
+Method :: = ReturnType:type ID:id LP Formals:f RP LCBR Statements:s RCBR
+	{:
+		RESULT = new Method(type,id,f,s);
+	:}
+	| STATIC ReturnType:type ID:id LP Formals:f RP LCBR Statements:s RCBR
+	{:
+		RESULT = new StaticMethod(type,id,f,s);
+	:}
+	ReturnType:type ID:id LP RP LCBR Statements:s RCBR
+	{:
+		RESULT = new Method(type, id, new ArrayList<Formal>(), s);
+	:}
+	| STATIC ReturnType:type ID:id LP RP LCBR Statements:s RCBR
+	{:
+		RESULT = new StaticMethod(type, id, new ArrayList<Formal>(), s);
+	:};
+
+//ReturnType
+ReturnType ::= VOID
+	{:
+		RESULT = new PrimitiveType(getLine(), DataTypes.VOID);
+	:}
+	| Type:type
+	{:
+		RESULT = type;
+	:};
+
+
+// formals
+Formals ::= Type:type ID:id
+	{:
+		List<Formal> list = new ArrayList<Formal>();
+		list.add(new Formal(type,id));
+		RESULT = list;
+	:}
+	| Formals:f COMMA Type:type ID:id
+	{:
+		f.add(new Formal(type, id));
+		RESULT = f;
+	:};
+
+//Type
+Type ::= INT
+	{:
+		RESULT = new PrimitiveType(getLine(), DataTypes.INT);
+	:}
+	| BOOLEAN
+	{:
+		RESULT = new PrimitiveType(getLine(), DataTypes.BOOLEAN);
+	:}
+	| STRING
+	{:
+		RESULT = new PrimitiveType(getLine(), DataTypes.STRING);
+	:}
+	| CLASS_ID:id
+	{:
+		RESULT = new UserType(getLine(), id);
+	:}
+	| Type:type LB RB
+	{
+		UserType t = new UserType(getLine(), type);
+		t.incrementDimension();
+		RESULT = t;
+	}
+	
+
+//StatementsBlock 
+StatementsBlock ::= Statement:s
+	{:
+		RESULT = new StatementsBlock(getLine(), s);
+	:}
+	| StatementsBlock:sb Statement:s
+	{:
+		sb.getStatements().add(s);
+	:};
+
+//Statements
+Statement ::= Location:loc ASSIGN Expression:exp SEMI
+	{:
+		RESULT = new Assignment(loc, exp);
+	:}
+	| Call:c SEMI
+	{:
+		RESULT = new CallStatement(c);
+	:}
+	| RETURN SEMI
+	{:
+		RESULT = new Return(getLine());
+	:}
+	| RETURN Expression:exp SEMI
+	{:
+		RESULT = new Return(getLine(), exp);
+	:}
+	| IF LP Expression:exp RP Statement:s
+	{:
+		RESULT = new If(exp, s);
+	:}
+	| IF LP Expression:exp RP Statement:s1 ELSE Statement:s2
+	{:
+		RESULT = new If(exp, s1, s2);
+	:}
+	| WHILE LP Expression:exp RP Statement:s
+	{:
+		RESULT = new While(exp, s);
+	:}
+	| BREAK SEMI
+	{:
+		RESULT = new Break(getLine());
+	:}
+	| CONTINUE SEMI
+	{:
+		RESULT = new Continue(getLine());
+	:}
+	| LCBR StatementBlock:sb RCBR
+	{:
+		RESULT = sb;
+	:}
+	| Type:type ID:id SEMI
+	{:
+		RESULT = new LocalVariable(type, id);
+	:}
+	| Type:type ID:id ASSIGN Expression:exp SEMI
+	{:
+		RESULT = new LocalVariable(type, id, exp);
+	:};
+	
+//Expression
+Expression ::= Location:loc
+	{:
+		RESULT = loc;
+	:}
+	| Call:c
+	{:
+		RESULT = c;
+	:}
+	| THIS:this
+	{:
+		RESULT = this;
+	:}
+	| NEW CLASS_ID:id LP RP
+	{:
+		RESULT = new NewClass(getLine(), id);
+	:}
+	| NEW Type:type LB Expression:exp RB
+	{:
+		RESULT = new NewArray(type, exp);
+	:}
+	| Expression:exp DOT LENGTH
+	{:
+		RESULT = new Length(exp);
+	:}
+	| Expression:exp1 BinaryOp:bin Expression:exp2
+	{:
+		RESULT = new BinaryOp(exp1, bin, exp2);
+	:}
+	| UnaryOp:u Expression:exp %prec UMINUS
+	{:
+		RESULT = new UnaryOp(u, exp);
+	:}
+	| Literal:l
+	{:
+		RESULT = l;
+	:}
+	| LP Expression:exp RP
+	{:
+		RESULT = exp;
+	:};
+
+//Call
+Call ::= StaticCall:sc
+	{:
+		RESULT = sc;	
+	:}
+	| VirtualCall:vc
+	{:
+		RESULT = vc;
+	:};
+
+//StaticCall
+StaticCall ::= CLASS_ID:class_id DOT ID:id LP RP
+	{:
+		RESULT = new StaticCall(getLine(), class_id, id, new ArrayList<Expression>()); 
+	:}
+	| CLASS_ID:class_id DOT ID:id LP ExpressionList:exp_list RP
+	{:
+		RESULT = new StaticCall(getLine(), class_id, id, exp_list); 
+	:};
+
+//VirtualCall
+VirtualCall ::= ID:id LP RP
+	{:
+		RESULT = new VirtualCall(getLine(), id, new ArrayList<Expression>()); 
+	:}
+	| Expression:exp DOT ID:id LP RP
+	{:
+		RESULT = new VirtualCall(getLine(), exp, id, new ArrayList<Expression>()); 
+	:}
+	|ID:id LP ExpressionList:exp_list RP
+	{:
+		RESULT = new VirtualCall(getLine(), id, exp_list); 
+	:}
+	| Expression:exp DOT ID:id LP ExpressionList:exp_list RP
+	{:
+		RESULT = new VirtualCall(getLine(), exp, id, exp_list); 
+	:};
+ 
+//ExpressionList
+ExpressionList ::= Expression:exp
+	{:
+		List<Expression> list = new ArrayList<Expression>();
+		list.add(exp);
+		RESULT = list;
+	:}
+	| ExpressionList:exp_list COMMA Expression:exp
+	{:
+		exp_list.add(exp);
+		RESULT = exp_list;
+	:};
+
+//Location
+Location ::= ID:id
+	{:
+		RESULT = VariableLocation(getLine(), id);
+	:}
+	| Expression:exp DOT ID:id
+	{:
+		RESULT = VariableLocation(getLine(), exp, id);
+	:}
+	| Expression:exp1 LB Expression:exp2 RB
+	{:
+		RESULT = ArrayLocation(exp1, exp2);
+	:};
+
+//BinaryOp
+BinaryOp ::= PLUS
+	{:
+		RESULT = BinaryOps.PLUS;
+	:}
+	| MINUS
+	{:
+		RESULT = BinaryOps.MINUS;
+	:}
+	| MULTIPLY
+	{:
+		RESULT = BinaryOps.MULTIPLY;
+	:}
+	| DIVIDE
+	{:
+		RESULT = BinaryOps.DIVIDE;
+	:}
+	| MOD
+	{:
+		RESULT = BinaryOps.MOD;
+	:}
+	| LAND
+	{:
+		RESULT = BinaryOps.LAND;
+	:}
+	| LOR
+	{:
+		RESULT = BinaryOps.LOR;
+	:}
+	| LT
+	{:
+		RESULT = BinaryOps.LT;
+	:}
+	| LTE
+	{:
+		RESULT = BinaryOps.LTE;
+	:}
+	| GT
+	{:
+		RESULT = BinaryOps.GT;
+	:}
+	| GTE
+	{:
+		RESULT = BinaryOps.GTE;
+	:}
+	| EQUAL
+	{:
+		RESULT = BinaryOps.EQUAL;
+	:}
+	| NEQUAL
+	{:
+		RESULT = BinaryOps.NEQUAL;
+	:};
+	
+//UnaryOp
+UnaryOp ::= MINUS
+	{:
+		RESULT = UnaryOps.UMINUS;
+	:}
+	| LNEG
+	{:
+		RESULT = UnaryOps.LNEG;
+	:};
+	
+//Literal
+Literal ::= INTEGER:i
+	{:
+		RESULT = new Literal(getLine(), LiteralTypes.INTEGER, i);
+	:}
+	| STRING:s
+	{:
+		RESULT = new Literal(getLine(), LiteralTypes.STRING, s);
+	:} 
+	| TRUE
+	{:
+		RESULT = new Literal(getLine(), LiteralTypes.TRUE);
+	:} 
+	| FALSE
+	{:
+		RESULT = new Literal(getLine(), LiteralTypes.FALSE);
+	:} 
+	| NULL
+	{:
+		RESULT = new Literal(getLine(), LiteralTypes.NULL);
+	:} 
