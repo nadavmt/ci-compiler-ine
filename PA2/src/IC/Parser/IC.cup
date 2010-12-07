@@ -29,12 +29,12 @@ non terminal Literal Literal;
 
 
 terminal LP,RP,LB,RB,LCBR,RCBR;
-terminal ASSIGN,DIVIDE,MOD,MULTIPLY,PLUS,MINUS,UMINUS;
+terminal ASSIGN,DIVIDE,MOD,MULTIPLY,PLUS,MINUS;//,UMINUS;
 terminal EQUAL,NEQUAL,GT,GTE,LT,LTE;
 terminal LAND,LNEG,LOR;
 terminal DOT,COMMA,SEMI;
 terminal Integer INTEGER;
-terminal VOID,BOOLEAN,INT,STRING,QUOTE,STATIC;
+terminal VOID,BOOLEAN,INT,STRING,STATIC;
 terminal IF,ELSE,WHILE,CONTINUE,BREAK,RETURN;
 terminal CLASS,CLASS_ID,ID;
 terminal EXTENDS,THIS,NEW;
@@ -44,8 +44,11 @@ terminal LENGTH;
 //////////////////////////
 // Precedence declarations
 precedence left PLUS,MINUS;
-precedence left MOD,MULTIPLY,DEVIDE;
-precedence left UMINUS;
+precedence left MOD,MULTIPLY,DIVIDE;
+//precedence left UMINUS;
+precedence left IF, ELSE;
+
+
 
 //////////////
 // The grammar
@@ -139,21 +142,21 @@ IDs ::= ID:id
 
 
 // methods
-Method :: = ReturnType:type ID:id LP Formals:f RP LCBR Statements:s RCBR
+Method ::= ReturnType:type ID:id LP Formals:f RP LCBR StatementsBlock:sb RCBR
 	{:
-		RESULT = new Method(type,id,f,s);
+		RESULT = new Method(type,id,f,sb.getStatements());
 	:}
-	| STATIC ReturnType:type ID:id LP Formals:f RP LCBR Statements:s RCBR
+	| STATIC ReturnType:type ID:id LP Formals:f RP LCBR StatementsBlock:sb RCBR
 	{:
-		RESULT = new StaticMethod(type,id,f,s);
+		RESULT = new StaticMethod(type,id,f,sb.getStatements());
 	:}
-	ReturnType:type ID:id LP RP LCBR Statements:s RCBR
+	ReturnType:type ID:id LP RP LCBR StatementsBlock:sb RCBR
 	{:
-		RESULT = new Method(type, id, new ArrayList<Formal>(), s);
+		RESULT = new Method(type, id, new ArrayList<Formal>(), sb.getStatements());
 	:}
-	| STATIC ReturnType:type ID:id LP RP LCBR Statements:s RCBR
+	| STATIC ReturnType:type ID:id LP RP LCBR StatementsBlock:sb RCBR
 	{:
-		RESULT = new StaticMethod(type, id, new ArrayList<Formal>(), s);
+		RESULT = new StaticMethod(type, id, new ArrayList<Formal>(), sb.getStatements());
 	:};
 
 //ReturnType
@@ -198,11 +201,11 @@ Type ::= INT
 		RESULT = new UserType(getLine(), id);
 	:}
 	| Type:type LB RB
-	{
+	{:
 		UserType t = new UserType(getLine(), type);
 		t.incrementDimension();
 		RESULT = t;
-	}
+	:};
 	
 
 //StatementsBlock 
@@ -232,13 +235,13 @@ Statement ::= Location:loc ASSIGN Expression:exp SEMI
 	{:
 		RESULT = new Return(getLine(), exp);
 	:}
-	| IF LP Expression:exp RP Statement:s
-	{:
-		RESULT = new If(exp, s);
-	:}
 	| IF LP Expression:exp RP Statement:s1 ELSE Statement:s2
 	{:
 		RESULT = new If(exp, s1, s2);
+	:}
+	| IF LP Expression:exp RP Statement:s
+	{:
+		RESULT = new If(exp, s);
 	:}
 	| WHILE LP Expression:exp RP Statement:s
 	{:
@@ -252,7 +255,7 @@ Statement ::= Location:loc ASSIGN Expression:exp SEMI
 	{:
 		RESULT = new Continue(getLine());
 	:}
-	| LCBR StatementBlock:sb RCBR
+	| LCBR StatementsBlock:sb RCBR
 	{:
 		RESULT = sb;
 	:}
@@ -294,7 +297,7 @@ Expression ::= Location:loc
 	{:
 		RESULT = new BinaryOp(exp1, bin, exp2);
 	:}
-	| UnaryOp:u Expression:exp %prec UMINUS
+	| UnaryOp:u Expression:exp //%prec UMINUS
 	{:
 		RESULT = new UnaryOp(u, exp);
 	:}
@@ -456,4 +459,4 @@ Literal ::= INTEGER:i
 	| NULL
 	{:
 		RESULT = new Literal(getLine(), LiteralTypes.NULL);
-	:} 
+	:} ;
