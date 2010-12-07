@@ -1,3 +1,91 @@
 package IC.Parser;
 
 import IC.AST.*;
+
+non terminal ICClass LibIC;
+non terminal List<LibraryMethod> LibMethods;
+non terminal LibraryMethod LibMethod;
+non terminal Type Type;
+non terminal Type ReturnType;
+non terminal List<Formal> Formals;
+
+terminal LP,RP,LB,RB,LCBR,RCBR;
+terminal DOT,COMMA,SEMI;
+terminal VOID,BOOLEAN,INT,STRING,QUOTE,STATIC;
+terminal CLASS,CLASS_ID,ID;
+
+
+//LibIC
+LibIC ::= CLASS CLASS_ID:id LCBR LibMethods:lm RCBR
+	{:
+		if (id.compareTo("Library") != 0)
+			throw new SemanticError(getLine(),"Library class should be called \"Library\" ");
+		RESULT = new ICClass(getLine(),id,new ArrayList<Field>(),lm);
+	:}
+
+//LibMethods
+LibMethods ::= LibMethod:lm
+	{:
+		List<LibraryMethod> list = new ArrayList<LibraryMethod>();
+		list.add(lm);
+		RESULT = list;
+	:}
+	|LibMethods:lms LibMethod:lm
+	{:
+		lms.add(lm);
+		RESULT = lms;
+	:} 
+
+//LibMethod
+LibMethod::= STATIC ReturnType:type ID:id LP RP SEMI
+	{:
+		RESULT = new LibraryMethod(type,id,new ArrayList<Formal>());
+	:}
+	|STATIC ReturnType:type ID:id LP Formals:formals RP SEMI
+	{:
+		RESULT = new LibraryMethod(type,id,formals);
+	:}
+
+//ReturnType
+ReturnType ::= VOID
+	{:
+		RESULT = new PrimitiveType(getLine(), DataTypes.VOID);
+	:}
+	| Type:type
+	{:
+		RESULT = type;
+	:};
+
+
+//formals
+Formals ::= Type:type ID:id
+	{:
+		List<Formal> list = new ArrayList<Formal>();
+		list.add(new Formal(type,id));
+		RESULT = list;
+	:}
+	| Formals:f COMMA Type:type ID:id
+	{:
+		f.add(new Formal(type, id));
+		RESULT = f;
+	:};
+
+//Type
+Type ::= INT
+	{:
+		RESULT = new PrimitiveType(getLine(), DataTypes.INT);
+	:}
+	| BOOLEAN
+	{:
+		RESULT = new PrimitiveType(getLine(), DataTypes.BOOLEAN);
+	:}
+	| STRING
+	{:
+		RESULT = new PrimitiveType(getLine(), DataTypes.STRING);
+	:}
+	| Type:type LB RB
+	{
+		UserType t = new UserType(getLine(), type);
+		t.incrementDimension();
+		RESULT = t;
+	}
