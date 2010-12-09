@@ -9,7 +9,8 @@ package IC.Parser;
  * on 18:42 01/12/08 from the specification file
  * <tt>src/IC/Parser/IC.lex</tt>
  */
-public @SuppressWarnings(value={"all"}) class Lexer {
+public @SuppressWarnings(value={"all"}) class Lexer
+	implements java_cup.runtime.Scanner {
 
   /** This character denotes the end of file */
   public static final int YYEOF = -1;

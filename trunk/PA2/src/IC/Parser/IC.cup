@@ -1,6 +1,9 @@
 package IC.Parser;
 
+import IC.*;
 import IC.AST.*;
+import java.util.List;
+import java.util.ArrayList;
 
 ////////////////////////////////////////////
 // Symbol list (terminals and non-terminals)
@@ -29,23 +32,34 @@ non terminal Literal Literal;
 
 
 terminal LP,RP,LB,RB,LCBR,RCBR;
-terminal ASSIGN,DIVIDE,MOD,MULTIPLY,PLUS,MINUS;//,UMINUS;
+terminal ASSIGN,DIVIDE,MOD,MULTIPLY,PLUS,MINUS,UMINUS;
 terminal EQUAL,NEQUAL,GT,GTE,LT,LTE;
 terminal LAND,LNEG,LOR;
 terminal DOT,COMMA,SEMI;
 terminal Integer INTEGER;
+terminal String ID;
+terminal String CLASS_ID;
+terminal String STR;
 terminal VOID,BOOLEAN,INT,STRING,STATIC;
 terminal IF,ELSE,WHILE,CONTINUE,BREAK,RETURN;
-terminal CLASS,CLASS_ID,ID;
+terminal CLASS;
 terminal EXTENDS,THIS,NEW;
 terminal FALSE,TRUE,NULL;
 terminal LENGTH;
 
 //////////////////////////
 // Precedence declarations
+precedence right ASSIGN;
+precedence left LT, LTE, GT, GTE;
+precedence left LOR;
+precedence left LAND;
+precedence left ID;
+precedence left EQUAL, NEQUAL;
 precedence left PLUS,MINUS;
 precedence left MOD,MULTIPLY,DIVIDE;
-//precedence left UMINUS;
+precedence right UMINUS, LNEG;
+precedence left LB, RB, LP, RP, DOT;
+
 precedence left IF, ELSE;
 
 
@@ -59,59 +73,59 @@ Program ::= ICClasses:classList
 		RESULT = new Program(classList);
 	:};
 	
-ICClasses ::= ICClass:class
+ICClasses ::= ICClass:c
 	{:	
 		List<ICClass> cl = new ArrayList<ICClass>();
-		cl.add(new ICCLASS(class);
+		cl.add(c);
 		RESULT = cl;
 	:}
-	| ICClasses:classList ICClass:class
+	| ICClasses:cl ICClass:c
 	{:
-		cl.add(class);
+		cl.add(c);
 		RESULT = cl;
 	:};  
 
 //class declaration
 ICClass ::= CLASS CLASS_ID:className LCBR RCBR
 	{:
-		RESULT = new ICClass(getLine(),className,new ArrayList<Field>,new ArrayList<Method>);
+		RESULT = new ICClass(classNameleft,className,new ArrayList<Field>(), new ArrayList<Method>());
 	:}
- 	| CLASS CLASS_ID:className EXTENDS:extendedClass CLASS_ID LCBR RCBR
+ 	| CLASS CLASS_ID:className EXTENDS CLASS_ID:extendedClass LCBR RCBR
  	{:
- 		RESULT = new ICClass(getLine(),className,extendedClass, new ArrayList<Field>,new ArrayList<Method>);
+ 		RESULT = new ICClass(classNameleft,className,extendedClass, new ArrayList<Field>(), new ArrayList<Method>());
  	:}
 	| CLASS CLASS_ID:className LCBR FieldOrMethod:classContent RCBR
 	{:
-		RESULT = new ICClass(getLine(),className,classContent.getFields(),classContent.getMethods());	
+		RESULT = new ICClass(classNameleft,className,classContent.getFields(),classContent.getMethods());	
 	:}
 	| CLASS CLASS_ID:className EXTENDS CLASS_ID:extendedClass LCBR FieldOrMethod:classContent RCBR
 	{:
-		RESULT = new ICClass(getLine(),className,extendedClass,classContent.getFields(),classContent.getMethods());
+		RESULT = new ICClass(classNameleft,className,extendedClass,classContent.getFields(),classContent.getMethods());
 	:};
 	
 	
 //class content - fields or content	
 FieldOrMethod ::= Fields:fields
 	{:
-		FieldOrMethod fom = new FieldOrMethod();
+		FieldOrMethod fom = new FieldOrMethod(fieldsleft);
 		fom.addFields(fields);
 		RESULT = fom;
 	:} 
 	|Method:method
 	{:
-		FieldOrMethod fom = new FieldOrMethod();
+		FieldOrMethod fom = new FieldOrMethod(methodleft);
 		fom.addMethod(method);
 		RESULT = fom;
 	:}
 	| FieldOrMethod:classContent Fields:fields
 	{:
 		classContent.addFields(fields);
-		RESULT = clssContent;
+		RESULT = classContent;
 	:}
 	| FieldOrMethod:classContent Method:method 
 	{:
 		classContent.addMethod(method);
-		RESULT = clssContent;
+		RESULT = classContent;
 	:};
 
 
@@ -144,15 +158,15 @@ IDs ::= ID:id
 // methods
 Method ::= ReturnType:type ID:id LP Formals:f RP LCBR StatementsBlock:sb RCBR
 	{:
-		RESULT = new Method(type,id,f,sb.getStatements());
+		RESULT = new VirtualMethod(type,id,f,sb.getStatements());
 	:}
 	| STATIC ReturnType:type ID:id LP Formals:f RP LCBR StatementsBlock:sb RCBR
 	{:
 		RESULT = new StaticMethod(type,id,f,sb.getStatements());
 	:}
-	ReturnType:type ID:id LP RP LCBR StatementsBlock:sb RCBR
+	| ReturnType:type ID:id LP RP LCBR StatementsBlock:sb RCBR
 	{:
-		RESULT = new Method(type, id, new ArrayList<Formal>(), sb.getStatements());
+		RESULT = new VirtualMethod(type, id, new ArrayList<Formal>(), sb.getStatements());
 	:}
 	| STATIC ReturnType:type ID:id LP RP LCBR StatementsBlock:sb RCBR
 	{:
@@ -160,9 +174,9 @@ Method ::= ReturnType:type ID:id LP Formals:f RP LCBR StatementsBlock:sb RCBR
 	:};
 
 //ReturnType
-ReturnType ::= VOID
+ReturnType ::= VOID:v
 	{:
-		RESULT = new PrimitiveType(getLine(), DataTypes.VOID);
+		RESULT = new PrimitiveType(vleft, DataTypes.VOID);
 	:}
 	| Type:type
 	{:
@@ -184,34 +198,35 @@ Formals ::= Type:type ID:id
 	:};
 
 //Type
-Type ::= INT
+Type ::= INT:i
 	{:
-		RESULT = new PrimitiveType(getLine(), DataTypes.INT);
+		RESULT = new PrimitiveType(ileft, DataTypes.INT);
 	:}
-	| BOOLEAN
+	| BOOLEAN:b
 	{:
-		RESULT = new PrimitiveType(getLine(), DataTypes.BOOLEAN);
+		RESULT = new PrimitiveType(bleft, DataTypes.BOOLEAN);
 	:}
-	| STRING
+	| STRING:s
 	{:
-		RESULT = new PrimitiveType(getLine(), DataTypes.STRING);
+		RESULT = new PrimitiveType(sleft, DataTypes.STRING);
 	:}
 	| CLASS_ID:id
 	{:
-		RESULT = new UserType(getLine(), id);
+		RESULT = new UserType(idleft, id);
 	:}
 	| Type:type LB RB
 	{:
-		UserType t = new UserType(getLine(), type);
-		t.incrementDimension();
-		RESULT = t;
+		type.incrementDimension();
+		RESULT = type;
 	:};
 	
 
 //StatementsBlock 
 StatementsBlock ::= Statement:s
 	{:
-		RESULT = new StatementsBlock(getLine(), s);
+		List<Statement> list = new ArrayList<Statement>();
+		list.add(s);
+		RESULT = new StatementsBlock(sleft, list);
 	:}
 	| StatementsBlock:sb Statement:s
 	{:
@@ -227,13 +242,13 @@ Statement ::= Location:loc ASSIGN Expression:exp SEMI
 	{:
 		RESULT = new CallStatement(c);
 	:}
-	| RETURN SEMI
+	| RETURN:r SEMI
 	{:
-		RESULT = new Return(getLine());
+		RESULT = new Return(rleft);
 	:}
 	| RETURN Expression:exp SEMI
 	{:
-		RESULT = new Return(getLine(), exp);
+		RESULT = new Return(expleft, exp);
 	:}
 	| IF LP Expression:exp RP Statement:s1 ELSE Statement:s2
 	{:
@@ -247,13 +262,13 @@ Statement ::= Location:loc ASSIGN Expression:exp SEMI
 	{:
 		RESULT = new While(exp, s);
 	:}
-	| BREAK SEMI
+	| BREAK:b SEMI
 	{:
-		RESULT = new Break(getLine());
+		RESULT = new Break(bleft);
 	:}
-	| CONTINUE SEMI
+	| CONTINUE:c SEMI
 	{:
-		RESULT = new Continue(getLine());
+		RESULT = new Continue(cleft);
 	:}
 	| LCBR StatementsBlock:sb RCBR
 	{:
@@ -277,13 +292,13 @@ Expression ::= Location:loc
 	{:
 		RESULT = c;
 	:}
-	| THIS:this
+	| THIS:t
 	{:
-		RESULT = this;
+		RESULT = new This(tleft);
 	:}
 	| NEW CLASS_ID:id LP RP
 	{:
-		RESULT = new NewClass(getLine(), id);
+		RESULT = new NewClass(idleft, id);
 	:}
 	| NEW Type:type LB Expression:exp RB
 	{:
@@ -293,13 +308,13 @@ Expression ::= Location:loc
 	{:
 		RESULT = new Length(exp);
 	:}
-	| Expression:exp1 BinaryOp:bin Expression:exp2
+	| BinaryOp:bin
 	{:
-		RESULT = new BinaryOp(exp1, bin, exp2);
+		RESULT = bin;
 	:}
-	| UnaryOp:u Expression:exp //%prec UMINUS
+	| UnaryOp:u
 	{:
-		RESULT = new UnaryOp(u, exp);
+		RESULT = u;
 	:}
 	| Literal:l
 	{:
@@ -323,29 +338,29 @@ Call ::= StaticCall:sc
 //StaticCall
 StaticCall ::= CLASS_ID:class_id DOT ID:id LP RP
 	{:
-		RESULT = new StaticCall(getLine(), class_id, id, new ArrayList<Expression>()); 
+		RESULT = new StaticCall(class_idleft, class_id, id, new ArrayList<Expression>()); 
 	:}
 	| CLASS_ID:class_id DOT ID:id LP ExpressionList:exp_list RP
 	{:
-		RESULT = new StaticCall(getLine(), class_id, id, exp_list); 
+		RESULT = new StaticCall(class_idleft, class_id, id, exp_list); 
 	:};
 
 //VirtualCall
 VirtualCall ::= ID:id LP RP
 	{:
-		RESULT = new VirtualCall(getLine(), id, new ArrayList<Expression>()); 
+		RESULT = new VirtualCall(idleft, id, new ArrayList<Expression>()); 
 	:}
 	| Expression:exp DOT ID:id LP RP
 	{:
-		RESULT = new VirtualCall(getLine(), exp, id, new ArrayList<Expression>()); 
+		RESULT = new VirtualCall(expleft, exp, id, new ArrayList<Expression>()); 
 	:}
 	|ID:id LP ExpressionList:exp_list RP
 	{:
-		RESULT = new VirtualCall(getLine(), id, exp_list); 
+		RESULT = new VirtualCall(idleft, id, exp_list); 
 	:}
 	| Expression:exp DOT ID:id LP ExpressionList:exp_list RP
 	{:
-		RESULT = new VirtualCall(getLine(), exp, id, exp_list); 
+		RESULT = new VirtualCall(expleft, exp, id, exp_list); 
 	:};
  
 //ExpressionList
@@ -364,99 +379,100 @@ ExpressionList ::= Expression:exp
 //Location
 Location ::= ID:id
 	{:
-		RESULT = VariableLocation(getLine(), id);
+		RESULT = new VariableLocation(idleft, id);
 	:}
 	| Expression:exp DOT ID:id
 	{:
-		RESULT = VariableLocation(getLine(), exp, id);
+		RESULT = new VariableLocation(expleft, exp, id);
 	:}
 	| Expression:exp1 LB Expression:exp2 RB
 	{:
-		RESULT = ArrayLocation(exp1, exp2);
+		RESULT = new ArrayLocation(exp1, exp2);
 	:};
 
 //BinaryOp
-BinaryOp ::= PLUS
+BinaryOp ::= Expression:exp1 PLUS Expression:exp2
 	{:
-		RESULT = BinaryOps.PLUS;
+		RESULT = new MathBinaryOp(exp1, BinaryOps.PLUS, exp2);
 	:}
-	| MINUS
+	| Expression:exp1 MINUS Expression:exp2
 	{:
-		RESULT = BinaryOps.MINUS;
+		RESULT = new MathBinaryOp(exp1, BinaryOps.MINUS, exp2);
 	:}
-	| MULTIPLY
+	| Expression:exp1 MULTIPLY Expression:exp2
 	{:
-		RESULT = BinaryOps.MULTIPLY;
+		RESULT = new MathBinaryOp(exp1, BinaryOps.MULTIPLY, exp2);
 	:}
-	| DIVIDE
+	| Expression:exp1 DIVIDE Expression:exp2
 	{:
-		RESULT = BinaryOps.DIVIDE;
+		RESULT = new MathBinaryOp(exp1, BinaryOps.DIVIDE, exp2);
 	:}
-	| MOD
+	| Expression:exp1 MOD Expression:exp2
 	{:
-		RESULT = BinaryOps.MOD;
+		RESULT = new MathBinaryOp(exp1, BinaryOps.MOD, exp2);
 	:}
-	| LAND
+	| Expression:exp1 LAND Expression:exp2
 	{:
-		RESULT = BinaryOps.LAND;
+		RESULT = new LogicalBinaryOp(exp1, BinaryOps.LAND, exp2);
 	:}
-	| LOR
+	| Expression:exp1 LOR Expression:exp2
 	{:
-		RESULT = BinaryOps.LOR;
+		RESULT = new LogicalBinaryOp(exp1, BinaryOps.LOR, exp2);
 	:}
-	| LT
+	| Expression:exp1 LT Expression:exp2
 	{:
-		RESULT = BinaryOps.LT;
+		RESULT = new LogicalBinaryOp(exp1, BinaryOps.LT, exp2);
 	:}
-	| LTE
+	| Expression:exp1 LTE Expression:exp2
 	{:
-		RESULT = BinaryOps.LTE;
+		RESULT = new LogicalBinaryOp(exp1, BinaryOps.LTE, exp2);
 	:}
-	| GT
+	| Expression:exp1 GT Expression:exp2
 	{:
-		RESULT = BinaryOps.GT;
+		RESULT = new LogicalBinaryOp(exp1, BinaryOps.GT, exp2);
 	:}
-	| GTE
+	| Expression:exp1 GTE Expression:exp2
 	{:
-		RESULT = BinaryOps.GTE;
+		RESULT = new LogicalBinaryOp(exp1, BinaryOps.GTE, exp2);
 	:}
-	| EQUAL
+	| Expression:exp1 EQUAL Expression:exp2
 	{:
-		RESULT = BinaryOps.EQUAL;
+		RESULT = new LogicalBinaryOp(exp1, BinaryOps.EQUAL, exp2);
 	:}
-	| NEQUAL
+	| Expression:exp1 NEQUAL Expression:exp2
 	{:
-		RESULT = BinaryOps.NEQUAL;
+		RESULT = new LogicalBinaryOp(exp1, BinaryOps.NEQUAL, exp2);
 	:};
 	
 //UnaryOp
-UnaryOp ::= MINUS
+UnaryOp ::= MINUS Expression:exp
 	{:
-		RESULT = UnaryOps.UMINUS;
+		RESULT = new MathUnaryOp(UnaryOps.UMINUS, exp);
 	:}
-	| LNEG
+	%prec UMINUS 
+	| LNEG Expression:exp
 	{:
-		RESULT = UnaryOps.LNEG;
+		RESULT = new LogicalUnaryOp(UnaryOps.LNEG, exp);
 	:};
 	
 //Literal
 Literal ::= INTEGER:i
 	{:
-		RESULT = new Literal(getLine(), LiteralTypes.INTEGER, i);
+		RESULT = new Literal(ileft, LiteralTypes.INTEGER, i);
 	:}
-	| STRING:s
+	| STR:s
 	{:
-		RESULT = new Literal(getLine(), LiteralTypes.STRING, s);
+		RESULT = new Literal(sleft, LiteralTypes.STRING, s);
 	:} 
-	| TRUE
+	| TRUE:t
 	{:
-		RESULT = new Literal(getLine(), LiteralTypes.TRUE);
+		RESULT = new Literal(tleft, LiteralTypes.TRUE);
 	:} 
-	| FALSE
+	| FALSE:f
 	{:
-		RESULT = new Literal(getLine(), LiteralTypes.FALSE);
+		RESULT = new Literal(fleft, LiteralTypes.FALSE);
 	:} 
-	| NULL
+	| NULL:n
 	{:
-		RESULT = new Literal(getLine(), LiteralTypes.NULL);
+		RESULT = new Literal(nleft, LiteralTypes.NULL);
 	:} ;

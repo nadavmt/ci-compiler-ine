@@ -70,4 +70,6 @@ public interface Visitor {
 	public Object visit(Literal literal);
 
 	public Object visit(ExpressionBlock expressionBlock);
+
+	public Object visit(FieldOrMethod fieldOrMethod);
 }

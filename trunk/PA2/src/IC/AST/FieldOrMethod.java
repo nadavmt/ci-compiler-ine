@@ -1,9 +1,7 @@
 package IC.AST;
 
-import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
-
-import javax.xml.datatype.DatatypeConstants.Field;
 
 /**
  * Class declaration AST node.
@@ -28,7 +26,8 @@ public class FieldOrMethod extends ASTNode {
 	 * @param methods
 	 *            List of all methods in the class.
 	 */
-	public ICClass() {
+	public FieldOrMethod(int line) {
+		super(line);
 		this.fields = new ArrayList<Field>();
 		this.methods = new ArrayList<Method>();
 	}
