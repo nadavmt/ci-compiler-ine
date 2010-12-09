@@ -425,4 +425,10 @@ public class PrettyPrinter implements Visitor {
 		--depth;
 		return output.toString();
 	}
+
+	@Override
+	public Object visit(FieldOrMethod fieldOrMethod) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

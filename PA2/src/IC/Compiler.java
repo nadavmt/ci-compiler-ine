@@ -3,12 +3,9 @@ package IC;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-
-import IC.Parser.Lexer;
-import IC.Parser.LexicalError;
-import IC.Parser.Token;
-import IC.Parser.sym;
+import IC.AST.*;
+import IC.Parser.*;
+import IC.*;
 
 /**
  * Breaks down a given source file to tokens using a lexical analyzer.
@@ -22,9 +19,12 @@ public class Compiler
 	 * Receives one single argument - a source file to analyze.
 	 * 
 	 * @param args Input filename
+	 * @throws Exception 
 	 */
-    public static void main(String[] args)
+    public static void main(String[] args) throws Exception
     {
+    	args = new String[1];
+    	args[0] = "C:\\Users\\yogi\\workspace\\MyCompiler\\src\\IC\\Parser\\IC.cup";
     	// Check that a filename was provided
     	
     	if (args.length == 0 || args.length > 2)
@@ -50,6 +50,12 @@ public class Compiler
     	
 		// The lexical analyzer which breaks down the source file into tokens.
 		Lexer lexer = new Lexer(fis);
-		Parser parser = new Parser(lexer);
+		parser p = new parser(lexer);
+		java_cup.runtime.Symbol parseSymbol = p.scan();
+		Program root = (Program) parseSymbol.value;
+		
+		PrettyPrinter printer = new PrettyPrinter(args[0]);
+        System.out.println(root.accept(printer));
+
     }
 }
