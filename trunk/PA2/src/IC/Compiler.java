@@ -21,10 +21,11 @@ public class Compiler
 	 * @param args Input filename
 	 * @throws Exception 
 	 */
-    public static void main(String[] args) throws Exception
+    
+	public static void main(String[] args) throws Exception
     {
     	args = new String[1];
-    	args[0] = "C:\\Users\\yogi\\workspace\\MyCompiler\\src\\IC\\Parser\\IC.cup";
+    	args[0] = "D:\\study\\CompilationWorkspace\\IC_COMPILER\\PA2\\src\\IC\\Parser\\IC.cup";
     	// Check that a filename was provided
     	
     	if (args.length == 0 || args.length > 2)
@@ -33,27 +34,56 @@ public class Compiler
     		return;
     	}
     	//TODO: 2nd parameter
-    	File file = new File(args[0]);
+    	File libFile = new File(args[1]);
+    	File wantedFile = new File(args[0]);
     	FileInputStream fis = null;
-    	
+    	FileInputStream lis = null;
+    	java_cup.runtime.Symbol libraryParseSymbol = new java_cup.runtime.Symbol(0);
+    	java_cup.runtime.Symbol fileParseSymbol = new java_cup.runtime.Symbol(0);
+
+    	//parses the library file
     	try
     	{
-    		// Try to open the file for reading
-    		
-    		fis = new FileInputStream(file);
+    		// Try to open the file for reading	
+    		lis = new FileInputStream(libFile);
+    		Lexer libraryLexer = new Lexer(lis);
+    		parser libraryParser = new parser(libraryLexer);
+    		libraryParseSymbol = libraryParser.parse();//maybe scan()
+    	}
+    	catch (FileNotFoundException e)
+    	{
+    		System.err.println("Unable to find the library  file " + args[1]);
+    		return;
+    	}
+    	catch (Exception e)
+    	{
+    		System.err.println(e);
+    		return ;
+    	}
+    	//parses the "BIG" file
+    	try
+    	{
+    		// Try to open the file for reading	
+    		fis = new FileInputStream(wantedFile);
+    		Lexer fileLexer = new Lexer(fis);
+    		parser fileParser = new parser(fileLexer);
+    		fileParseSymbol = fileParser.parse();//maybe scan();
     	}
     	catch (FileNotFoundException e)
     	{
     		System.err.println("Unable to find the specified file.");
     		return;
     	}
+    	catch (Exception e)
+    	{
+    		System.err.println(e);
+    		return ;
+    	}
     	
-		// The lexical analyzer which breaks down the source file into tokens.
-		Lexer lexer = new Lexer(fis);
-		parser p = new parser(lexer);
-		java_cup.runtime.Symbol parseSymbol = p.scan();
-		Program root = (Program) parseSymbol.value;
-		
+    	ICClass libraryRoot = (ICClass) libraryParseSymbol.value;//creates a ckass frin the root
+    	Program root = (Program) fileParseSymbol.value;
+    	root.getClasses().add(libraryRoot);//adds it to the file classes
+    	
 		PrettyPrinter printer = new PrettyPrinter(args[0]);
         System.out.println(root.accept(printer));
 
