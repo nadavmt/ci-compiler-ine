@@ -3,6 +3,10 @@ package IC;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
+
+import java_cup.runtime.Symbol;
 import IC.AST.*;
 import IC.Parser.*;
 import IC.*;
@@ -22,70 +26,132 @@ public class Compiler
 	 * @throws Exception 
 	 */
     
+	private static String findOptions(ArrayList<String> list, String option, boolean exact)
+	{
+		for (int i = 0; i < list.size(); i++) {
+			if (exact)
+			{
+				if (list.get(i).equals(option))
+				{
+					list.remove(i);
+					return option;
+				}
+			}
+			else
+			{
+				if (list.get(i).startsWith(option))
+				{
+					String tail = list.get(i).substring(option.length());
+					list.remove(i);
+					return tail;
+				}
+			}
+			
+		}
+		return null;
+	}
+	
 	public static void main(String[] args) throws Exception
     {
-    	args = new String[1];
-    	args[0] = "D:\\study\\CompilationWorkspace\\IC_COMPILER\\PA2\\src\\IC\\Parser\\IC.cup";
-    	// Check that a filename was provided
+		ArrayList<String> myArgs = new ArrayList<String>();
+		for (int i=0; i<args.length;i++)
+		{
+			myArgs.add(args[i]);
+		}
+		
+		String libPath = "libic.sig";
+		String icFile;
+		boolean prettyPrint;
+		
+		try
+		{
+			if (args.length == 0 || args.length > 3)
+				throw new Exception("illegal arga number");
+			prettyPrint = findOptions(myArgs, "-print-ast", true) != null;
+			libPath = findOptions(myArgs, "-L", false);
+			if (libPath == null)
+				libPath = "libic.sig";
+			
+			if (myArgs.size() != 1)
+				throw new Exception();
+			
+			icFile = myArgs.get(0);
+		}
+		catch(Exception e)
+		{
+			System.err.println("java IC.Compiler <file.ic> [ -L</path/to/libic.sig> ]");
+    		return;	
+		}
     	
-    	if (args.length == 0 || args.length > 2)
-    	{
-    		System.err.println("java IC.Compiler <file.ic> [ -L</path/to/libic.sig> ]");
-    		return;
-    	}
-    	//TODO: 2nd parameter
-    	File libFile = new File(args[1]);
-    	File wantedFile = new File(args[0]);
+    	File wantedFile = new File(icFile);
+    	File libFile = new File(libPath);
     	FileInputStream fis = null;
     	FileInputStream lis = null;
-    	java_cup.runtime.Symbol libraryParseSymbol = new java_cup.runtime.Symbol(0);
-    	java_cup.runtime.Symbol fileParseSymbol = new java_cup.runtime.Symbol(0);
-
+    	
+    	Symbol libraryParseSymbol = new Symbol(0);
+    	Symbol fileParseSymbol = new Symbol(1);
+    	LibParser libraryParser = null;
+    	String currentFile = null;
     	//parses the library file
     	try
     	{
     		// Try to open the file for reading	
+    		currentFile = libPath;
     		lis = new FileInputStream(libFile);
     		Lexer libraryLexer = new Lexer(lis);
-    		parser libraryParser = new parser(libraryLexer);
+    		libraryParser = new LibParser(libraryLexer);
     		libraryParseSymbol = libraryParser.parse();//maybe scan()
-    	}
-    	catch (FileNotFoundException e)
-    	{
-    		System.err.println("Unable to find the library  file " + args[1]);
-    		return;
-    	}
-    	catch (Exception e)
-    	{
-    		System.err.println(e);
-    		return ;
-    	}
-    	//parses the "BIG" file
-    	try
-    	{
-    		// Try to open the file for reading	
+    		lis.close();
+    		lis = null;	
+    		currentFile = icFile;
     		fis = new FileInputStream(wantedFile);
     		Lexer fileLexer = new Lexer(fis);
-    		parser fileParser = new parser(fileLexer);
+    		Parser fileParser = new Parser(fileLexer);
     		fileParseSymbol = fileParser.parse();//maybe scan();
+    		fis.close();
+    		fis = null;
+    		
+    		ICClass libraryRoot = (ICClass) libraryParseSymbol.value;//creates a class from the root
+        	Program root = (Program) fileParseSymbol.value;
+        	root.getClasses().add(libraryRoot);//adds it to the file classes
+        	
+        	if (prettyPrint)
+        	{
+        		PrettyPrinter printer = new PrettyPrinter(args[0]);
+        		System.out.println(root.accept(printer));
+        	}
     	}
     	catch (FileNotFoundException e)
     	{
-    		System.err.println("Unable to find the specified file.");
+    		System.err.println("Unable to locate file " + currentFile);
     		return;
+    	}
+    	catch(SyntaxError se)
+    	{
+    		System.err.println(currentFile+ ": Syntax error at line " + se.getLineNumber() + ": " + se.getMessage());
+    		return ;
+    	}
+    	catch (SemanticError se)
+    	{
+    		System.err.println(currentFile+ ": Semantic error at line " + se.getLineNumber() + ": " + se.getMessage());
+    		return ;
+    	}
+    	catch (LexicalError le)
+    	{
+    		System.err.println(currentFile+ ": Lexical error at line " + le.getLineNumber() + ": " + le.getMessage());
+    		return ;	
     	}
     	catch (Exception e)
     	{
-    		System.err.println(e);
+    		System.err.println(currentFile+ ": " + e);
     		return ;
     	}
-    	
-    	ICClass libraryRoot = (ICClass) libraryParseSymbol.value;//creates a ckass frin the root
-    	Program root = (Program) fileParseSymbol.value;
-    	root.getClasses().add(libraryRoot);//adds it to the file classes
-    	
-		PrettyPrinter printer = new PrettyPrinter(args[0]);
-        System.out.println(root.accept(printer));
-
+    	finally
+    	{
+    		if (lis != null)
+    			lis.close();
+    		if (fis != null)
+    			fis.close();
+    	}
     }
 }

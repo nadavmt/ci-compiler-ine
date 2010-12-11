@@ -4,6 +4,20 @@ import IC.*;
 import IC.AST.*;
 import java.util.List;
 import java.util.ArrayList;
+import java_cup.runtime.Symbol;
+
+parser code {:
+
+	// override method call in case of a (unrecovered) syntax error
+	public void unrecovered_syntax_error(Symbol current_token) throws SyntaxError{
+		throw new SyntaxError(current_token.left, current_token);
+	}
+	
+	// override method call in case of a syntax error, to avoid duplicate error messages
+	public void syntax_error(Symbol current_token){}
+	
+:};
+
 
 ////////////////////////////////////////////
 // Symbol list (terminals and non-terminals)
@@ -17,9 +31,8 @@ non terminal List<String> IDs;
 non terminal Method Method; 
 non terminal List<Formal> Formals;
 non terminal Type Type;
-non terminal Type ReturnType;
 non terminal Statement Statement;
-non terminal StatementsBlock StatementsBlock;
+non terminal List<Statement> StatementsBlock;
 non terminal Location Location;
 non terminal Expression Expression;
 non terminal List<Expression> ExpressionList;
@@ -39,7 +52,7 @@ terminal DOT,COMMA,SEMI;
 terminal Integer INTEGER;
 terminal String ID;
 terminal String CLASS_ID;
-terminal String STR;
+terminal String QUOTE;
 terminal VOID,BOOLEAN,INT,STRING,STATIC;
 terminal IF,ELSE,WHILE,CONTINUE,BREAK,RETURN;
 terminal CLASS;
@@ -57,7 +70,7 @@ precedence left ID;
 precedence left EQUAL, NEQUAL;
 precedence left PLUS,MINUS;
 precedence left MOD,MULTIPLY,DIVIDE;
-precedence right UMINUS, LNEG;
+precedence left UMINUS, LNEG;
 precedence left LB, RB, LP, RP, DOT;
 
 precedence left IF, ELSE;
@@ -156,46 +169,54 @@ IDs ::= ID:id
 
 
 // methods
-Method ::= ReturnType:type ID:id LP Formals:f RP LCBR StatementsBlock:sb RCBR
+Method ::= Type:type ID:id LP Formals:f RP LCBR StatementsBlock:sb RCBR
 	{:
-		RESULT = new VirtualMethod(type,id,f,sb.getStatements());
+		RESULT = new VirtualMethod(type,id,f,sb);
 	:}
-	| STATIC ReturnType:type ID:id LP Formals:f RP LCBR StatementsBlock:sb RCBR
+	| STATIC Type:type ID:id LP Formals:f RP LCBR StatementsBlock:sb RCBR
 	{:
-		RESULT = new StaticMethod(type,id,f,sb.getStatements());
+		RESULT = new StaticMethod(type,id,f,sb);
 	:}
-	| ReturnType:type ID:id LP RP LCBR StatementsBlock:sb RCBR
+	| Type:type ID:id LP RP LCBR StatementsBlock:sb RCBR
 	{:
-		RESULT = new VirtualMethod(type, id, new ArrayList<Formal>(), sb.getStatements());
+		RESULT = new VirtualMethod(type, id, new ArrayList<Formal>(), sb);
 	:}
-	| STATIC ReturnType:type ID:id LP RP LCBR StatementsBlock:sb RCBR
+	| STATIC Type:type ID:id LP RP LCBR StatementsBlock:sb RCBR
 	{:
-		RESULT = new StaticMethod(type, id, new ArrayList<Formal>(), sb.getStatements());
-	:};
-
-//ReturnType
-ReturnType ::= VOID:v
+		RESULT = new StaticMethod(type, id, new ArrayList<Formal>(), sb);
+	:}|
+	VOID:v ID:id LP Formals:f RP LCBR StatementsBlock:sb RCBR
 	{:
-		RESULT = new PrimitiveType(vleft, DataTypes.VOID);
+		RESULT = new VirtualMethod(new PrimitiveType(vleft, DataTypes.VOID),id,f,sb);
 	:}
-	| Type:type
+	| STATIC VOID:v ID:id LP Formals:f RP LCBR StatementsBlock:sb RCBR
 	{:
-		RESULT = type;
-	:};
+		RESULT = new StaticMethod(new PrimitiveType(vleft, DataTypes.VOID),id,f,sb);
+	:}
+	| VOID:v ID:id LP RP LCBR StatementsBlock:sb RCBR
+	{:
+		RESULT = new VirtualMethod(new PrimitiveType(vleft, DataTypes.VOID), id, new ArrayList<Formal>(), sb);
+	:}
+	| STATIC VOID:v ID:id LP RP LCBR StatementsBlock:sb RCBR
+	{:
+		RESULT = new StaticMethod(new PrimitiveType(vleft, DataTypes.VOID), id, new ArrayList<Formal>(), sb);
+	:}
+	;
 
 
 // formals
-Formals ::= Type:type ID:id
+Formals ::= Formals:f COMMA Type:type ID:id
+	{:
+		f.add(new Formal(type, id));
+		RESULT = f;
+	:} 
+	|Type:type ID:id
 	{:
 		List<Formal> list = new ArrayList<Formal>();
 		list.add(new Formal(type,id));
 		RESULT = list;
 	:}
-	| Formals:f COMMA Type:type ID:id
-	{:
-		f.add(new Formal(type, id));
-		RESULT = f;
-	:};
+	;
 
 //Type
 Type ::= INT:i
@@ -222,16 +243,16 @@ Type ::= INT:i
 	
 
 //StatementsBlock 
-StatementsBlock ::= Statement:s
+StatementsBlock ::= StatementsBlock:sb Statement:s
 	{:
-		List<Statement> list = new ArrayList<Statement>();
-		list.add(s);
-		RESULT = new StatementsBlock(sleft, list);
+		sb.add(s);
+		RESULT = sb;
 	:}
-	| StatementsBlock:sb Statement:s
+	|
 	{:
-		sb.getStatements().add(s);
-	:};
+	 	RESULT = new ArrayList<Statement>();
+	:}
+	;
 
 //Statements
 Statement ::= Location:loc ASSIGN Expression:exp SEMI
@@ -270,9 +291,9 @@ Statement ::= Location:loc ASSIGN Expression:exp SEMI
 	{:
 		RESULT = new Continue(cleft);
 	:}
-	| LCBR StatementsBlock:sb RCBR
+	| LCBR:l StatementsBlock:sb RCBR
 	{:
-		RESULT = sb;
+		RESULT = new StatementsBlock(lleft, sb);
 	:}
 	| Type:type ID:id SEMI
 	{:
@@ -460,7 +481,7 @@ Literal ::= INTEGER:i
 	{:
 		RESULT = new Literal(ileft, LiteralTypes.INTEGER, i);
 	:}
-	| STR:s
+	| QUOTE:s
 	{:
 		RESULT = new Literal(sleft, LiteralTypes.STRING, s);
 	:} 

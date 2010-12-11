@@ -1,32 +1,63 @@
 package IC.Parser;
 
+import IC.*;
 import IC.AST.*;
+import java.util.List;
+import java.util.ArrayList;
+import java_cup.runtime.Symbol;
+
+
+parser code {:
+
+	// override method call in case of a (unrecovered) syntax error
+	public void unrecovered_syntax_error(Symbol current_token) throws SyntaxError{
+		throw new SyntaxError(current_token.left, (String)current_token.value);
+	}
+	
+	// override method call in case of a syntax error, to avoid duplicate error messages
+	public void syntax_error(Symbol current_token){}
+	
+:};
 
 non terminal ICClass LibIC;
-non terminal List<LibraryMethod> LibMethods;
+non terminal List<Method> LibMethods;
 non terminal LibraryMethod LibMethod;
 non terminal Type Type;
 non terminal Type ReturnType;
 non terminal List<Formal> Formals;
 
 terminal LP,RP,LB,RB,LCBR,RCBR;
+terminal ASSIGN,DIVIDE,MOD,MULTIPLY,PLUS,MINUS,UMINUS;
+terminal EQUAL,NEQUAL,GT,GTE,LT,LTE;
+terminal LAND,LNEG,LOR;
 terminal DOT,COMMA,SEMI;
-terminal VOID,BOOLEAN,INT,STRING,QUOTE,STATIC;
-terminal CLASS,CLASS_ID,ID;
+terminal Integer INTEGER;
+terminal String ID;
+terminal String CLASS_ID;
+terminal String QUOTE;
+terminal VOID,BOOLEAN,INT,STRING,STATIC;
+terminal IF,ELSE,WHILE,CONTINUE,BREAK,RETURN;
+terminal CLASS;
+terminal EXTENDS,THIS,NEW;
+terminal FALSE,TRUE,NULL;
+terminal LENGTH;
+// Precedences:
+precedence left LP, RP, LB, RB;
 
 
 //LibIC
 LibIC ::= CLASS CLASS_ID:id LCBR LibMethods:lm RCBR
 	{:
 		if (id.compareTo("Library") != 0)
-			throw new SemanticError(getLine(),"Library class should be called \"Library\" ");
-		RESULT = new ICClass(getLine(),id,new ArrayList<Field>(),lm);
-	:}
-
+			throw new SemanticError(idleft, "Library class should be called \"Library\" ");
+		RESULT = new ICClass(idleft,id,new ArrayList<Field>(),lm);
+	:};
+	
+	
 //LibMethods
 LibMethods ::= LibMethod:lm
 	{:
-		List<LibraryMethod> list = new ArrayList<LibraryMethod>();
+		List<Method> list = new ArrayList<Method>();
 		list.add(lm);
 		RESULT = list;
 	:}
@@ -34,7 +65,7 @@ LibMethods ::= LibMethod:lm
 	{:
 		lms.add(lm);
 		RESULT = lms;
-	:} 
+	:} ;
 
 //LibMethod
 LibMethod::= STATIC ReturnType:type ID:id LP RP SEMI
@@ -44,12 +75,12 @@ LibMethod::= STATIC ReturnType:type ID:id LP RP SEMI
 	|STATIC ReturnType:type ID:id LP Formals:formals RP SEMI
 	{:
 		RESULT = new LibraryMethod(type,id,formals);
-	:}
+	:};
 
 //ReturnType
-ReturnType ::= VOID
+ReturnType ::= VOID:v
 	{:
-		RESULT = new PrimitiveType(getLine(), DataTypes.VOID);
+		RESULT = new PrimitiveType(vleft, DataTypes.VOID);
 	:}
 	| Type:type
 	{:
@@ -57,7 +88,8 @@ ReturnType ::= VOID
 	:};
 
 
-//formals
+
+// formals
 Formals ::= Type:type ID:id
 	{:
 		List<Formal> list = new ArrayList<Formal>();
@@ -71,21 +103,22 @@ Formals ::= Type:type ID:id
 	:};
 
 //Type
-Type ::= INT
+Type ::= INT:i
 	{:
-		RESULT = new PrimitiveType(getLine(), DataTypes.INT);
+		RESULT = new PrimitiveType(ileft, DataTypes.INT);
 	:}
-	| BOOLEAN
+	| BOOLEAN:b
 	{:
-		RESULT = new PrimitiveType(getLine(), DataTypes.BOOLEAN);
+		RESULT = new PrimitiveType(bleft, DataTypes.BOOLEAN);
 	:}
-	| STRING
+	| STRING:s
 	{:
-		RESULT = new PrimitiveType(getLine(), DataTypes.STRING);
+		RESULT = new PrimitiveType(sleft, DataTypes.STRING);
 	:}
 	| Type:type LB RB
-	{
-		UserType t = new UserType(getLine(), type);
-		t.incrementDimension();
-		RESULT = t;
-	}
+	{:
+		type.incrementDimension();
+		RESULT = type;
+	:};
+
+	

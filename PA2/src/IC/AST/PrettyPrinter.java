@@ -428,7 +428,18 @@ public class PrettyPrinter implements Visitor {
 
 	@Override
 	public Object visit(FieldOrMethod fieldOrMethod) {
-		// TODO Auto-generated method stub
-		return null;
+		StringBuffer output = new StringBuffer();
+
+		indent(output, fieldOrMethod);
+		output.append("Class Members:");
+		depth += 2;
+		for (Field field : fieldOrMethod.getFields())
+			output.append(field.accept(this));
+		
+		for (Method method : fieldOrMethod.getMethods())
+			output.append(method.accept(this));
+		
+		depth -= 2;
+		return output.toString();
 	}
 }
