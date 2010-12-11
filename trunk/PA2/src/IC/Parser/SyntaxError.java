@@ -1,7 +1,10 @@
 package IC.Parser;
 
+import java_cup.runtime.Symbol;
+
 public class SyntaxError extends ICException
 {
+	
 	// ctor with no line number
 	public SyntaxError(String message)
 	{
@@ -9,9 +12,14 @@ public class SyntaxError extends ICException
 	}
 	
 	// ctor
-    public SyntaxError(int line, String message)
+	
+	public SyntaxError(int line, String message)
+	{
+		super(line, message);
+	}
+    public SyntaxError(int line, Symbol sym)
     {
     	// call exception's ctor
-    	super(line, message);
+    	super(line, Integer.toString(sym.sym));
     }
 }
