@@ -1,7 +1,0 @@
-class Test {
-	boolean test (int i, string x)
-		{
-			x= "test
-			return (i==2);
-		}
-/*this program should throw an error of unclosed quote*/

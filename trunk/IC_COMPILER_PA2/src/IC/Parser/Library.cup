@@ -1,0 +1,155 @@
+package IC.Parser;
+
+import IC.*;
+import IC.AST.*;
+import java.util.List;
+import java.util.ArrayList;
+import java_cup.runtime.Symbol;
+
+parser code
+{:
+	private Lexer lexer;
+	
+	public LibParser(Lexer lexer)
+	{
+		super(lexer);
+		
+		this.lexer = lexer;
+	}
+	
+	//////////////////////////////////////////////////////
+	// Allows us to throw our own SyntaxError exceptions
+	//////////////////////////////////////////////////////
+	
+	public void unrecovered_syntax_error(Symbol current_token) throws SyntaxError
+	{
+		throw new SyntaxError(current_token.left, (String)current_token.value);
+	}
+	
+	public void syntax_error(Symbol current_token) {}
+	
+	//////////////////////////////////////////////////////////
+	// Allows us to get the line number of the current token
+	//////////////////////////////////////////////////////////
+	
+	public int getLine()
+	{
+		return lexer.getLineNumber();
+	}
+:};
+
+//////////////////////////////////////////////////
+// Non-terminals
+//////////////////////////////////////////////////
+
+non terminal ICClass LibIC;
+non terminal List<Method> LibMethods;
+non terminal LibraryMethod LibMethod;
+non terminal Type Type;
+non terminal Type ReturnType;
+non terminal List<Formal> Formals;
+
+//////////////////////////////////////////////////
+// Terminals
+//////////////////////////////////////////////////
+
+terminal LP,RP,LB,RB,LCBR,RCBR;
+terminal ASSIGN,DIVIDE,MOD,MULTIPLY,PLUS,MINUS,UMINUS;
+terminal EQUAL,NEQUAL,GT,GTE,LT,LTE;
+terminal LAND,LNEG,LOR;
+terminal DOT,COMMA,SEMI;
+terminal Integer INTEGER;
+terminal String ID;
+terminal String CLASS_ID;
+terminal String QUOTE;
+terminal VOID,BOOLEAN,INT,STRING,STATIC;
+terminal IF,ELSE,WHILE,CONTINUE,BREAK,RETURN;
+terminal CLASS;
+terminal EXTENDS,THIS,NEW;
+terminal FALSE,TRUE,NULL;
+terminal LENGTH;
+
+//////////////////////////////////////////////////
+// Precedence
+//////////////////////////////////////////////////
+
+precedence left LP, RP, LB, RB;
+
+//////////////////////////////////////////////////
+// Syntactic rules
+//////////////////////////////////////////////////
+
+LibIC ::= CLASS CLASS_ID:id LCBR LibMethods:lm RCBR
+	{:
+		if (id.compareTo("Library") != 0)
+			throw new SemanticError(parser.getLine(), "Library class must be named \"Library\"");
+		
+		RESULT = new ICClass(parser.getLine(), id, new ArrayList<Field>(), lm);
+	:};
+	
+LibMethods ::=
+	LibMethod:lm
+	{:
+		List<Method> list = new ArrayList<Method>();
+		list.add(lm);
+		RESULT = list;
+	:} |
+	LibMethods:lms LibMethod:lm
+	{:
+		lms.add(lm);
+		RESULT = lms;
+	:} ;
+
+LibMethod::=
+	STATIC ReturnType:type ID:id LP RP SEMI
+	{:
+		RESULT = new LibraryMethod(type, id, new ArrayList<Formal>());
+	:} |
+	STATIC ReturnType:type ID:id LP Formals:formals RP SEMI
+	{:
+		RESULT = new LibraryMethod(type, id, formals);
+	:};
+
+ReturnType ::=
+	VOID:v
+	{:
+		RESULT = new PrimitiveType(parser.getLine(), DataTypes.VOID);
+	:} |
+	Type:type
+	{:
+		RESULT = type;
+	:};
+
+Formals ::=
+	Type:type ID:id
+	{:
+		List<Formal> list = new ArrayList<Formal>();
+		list.add(new Formal(type, id));
+		RESULT = list;
+	:} |
+	Formals:f COMMA Type:type ID:id
+	{:
+		f.add(new Formal(type, id));
+		RESULT = f;
+	:};
+
+Type ::=
+	INT:i
+	{:
+		RESULT = new PrimitiveType(parser.getLine(), DataTypes.INT);
+	:} |
+	BOOLEAN:b
+	{:
+		RESULT = new PrimitiveType(parser.getLine(), DataTypes.BOOLEAN);
+	:} |
+	STRING:s
+	{:
+		RESULT = new PrimitiveType(parser.getLine(), DataTypes.STRING);
+	:} |
+	Type:type LB RB
+	{:
+		type.incrementDimension();
+		RESULT = type;
+	:};
+
+	
