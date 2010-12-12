@@ -8,15 +8,6 @@ import java_cup.runtime.Symbol;
 
 parser code
 {:
-	private Lexer lexer;
-	
-	public LibParser(Lexer lexer)
-	{
-		super(lexer);
-		
-		this.lexer = lexer;
-	}
-	
 	//////////////////////////////////////////////////////
 	// Allows us to throw our own SyntaxError exceptions
 	//////////////////////////////////////////////////////
@@ -27,15 +18,6 @@ parser code
 	}
 	
 	public void syntax_error(Symbol current_token) {}
-	
-	//////////////////////////////////////////////////////////
-	// Allows us to get the line number of the current token
-	//////////////////////////////////////////////////////////
-	
-	public int getLine()
-	{
-		return lexer.getLineNumber();
-	}
 :};
 
 //////////////////////////////////////////////////
@@ -82,9 +64,9 @@ precedence left LP, RP, LB, RB;
 LibIC ::= CLASS CLASS_ID:id LCBR LibMethods:lm RCBR
 	{:
 		if (id.compareTo("Library") != 0)
-			throw new SemanticError(parser.getLine(), "Library class must be named \"Library\"");
+			throw new SemanticError(idleft, "Library class must be named \"Library\"");
 		
-		RESULT = new ICClass(parser.getLine(), id, new ArrayList<Field>(), lm);
+		RESULT = new ICClass(idleft, id, new ArrayList<Field>(), lm);
 	:};
 	
 LibMethods ::=
@@ -113,7 +95,7 @@ LibMethod::=
 ReturnType ::=
 	VOID:v
 	{:
-		RESULT = new PrimitiveType(parser.getLine(), DataTypes.VOID);
+		RESULT = new PrimitiveType(vleft, DataTypes.VOID);
 	:} |
 	Type:type
 	{:
@@ -136,15 +118,15 @@ Formals ::=
 Type ::=
 	INT:i
 	{:
-		RESULT = new PrimitiveType(parser.getLine(), DataTypes.INT);
+		RESULT = new PrimitiveType(ileft, DataTypes.INT);
 	:} |
 	BOOLEAN:b
 	{:
-		RESULT = new PrimitiveType(parser.getLine(), DataTypes.BOOLEAN);
+		RESULT = new PrimitiveType(bleft, DataTypes.BOOLEAN);
 	:} |
 	STRING:s
 	{:
-		RESULT = new PrimitiveType(parser.getLine(), DataTypes.STRING);
+		RESULT = new PrimitiveType(sleft, DataTypes.STRING);
 	:} |
 	Type:type LB RB
 	{:

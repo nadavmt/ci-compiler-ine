@@ -70,6 +70,7 @@ public class Compiler
     	Symbol srcParseSymbol = new Symbol(1);
     	
     	String currentFile = null;
+    	PrettyPrinter printer = null;
     	
     	try
     	{
@@ -78,27 +79,36 @@ public class Compiler
     		Lexer libLexer = new Lexer(lis);
     		LibParser libParser = new LibParser(libLexer);
     		libParseSymbol = libParser.parse();
+			ICClass libRoot = (ICClass)libParseSymbol.value;
     		lis.close();
     		lis = null;
+			
+			System.out.println("Parsed " + currentFile + " successfully!");
+    		
+    		if (prettyPrint)
+        	{
+        		printer = new PrettyPrinter(libPath);
+        		System.out.println(libRoot.accept(printer) + "\n");
+        	}
     		
     		currentFile = srcPath;
     		fis = new FileInputStream(srcFile);
     		Lexer srcLexer = new Lexer(fis);
     		Parser fileParser = new Parser(srcLexer);
     		srcParseSymbol = fileParser.parse();
+			Program srcRoot = (Program)srcParseSymbol.value;
     		fis.close();
     		fis = null;
+			
+			System.out.println("Parsed " + currentFile + " successfully!");
     		
-    		ICClass libRoot = (ICClass)libParseSymbol.value;
-        	Program srcRoot = (Program)srcParseSymbol.value;
-        	
-        	srcRoot.getClasses().add(libRoot);
-        	
         	if (prettyPrint)
         	{
-        		PrettyPrinter printer = new PrettyPrinter(srcPath);
+        		printer = new PrettyPrinter(srcPath);
         		System.out.println(srcRoot.accept(printer));
         	}
+			
+        	srcRoot.getClasses().add(libRoot);
     	}
     	catch (FileNotFoundException e)
     	{
@@ -134,7 +144,6 @@ public class Compiler
     			fis.close();
     	}
     }
-	
 	
 	/**
 	 * Checks whether a given command line parameter exists among the existing arguments, and
