@@ -135,6 +135,7 @@ public class Compiler
     	}
     }
 	
+	
 	/**
 	 * Checks whether a given command line parameter exists among the existing arguments, and
 	 * returns the parameter's value.
