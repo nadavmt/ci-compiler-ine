@@ -1,0 +1,1 @@
+D:\study\CompilationWorkspace\Compilation\IC_COMPILER_PA2\test\Wronglibic.sig: Semantic error at line 1: Library class must be named "Library"

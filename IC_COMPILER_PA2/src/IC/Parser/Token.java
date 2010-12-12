@@ -15,7 +15,7 @@ public class Token extends Symbol
 	// ctor for tokens with no value
     public Token(int line, int id)
     {
-        super(id, null);
+        super(id, line + 1, line + 1, null);
         
         this.lineNumber = line;
     }
@@ -23,7 +23,7 @@ public class Token extends Symbol
     // ctor for tokens with a value
     public Token(int line, int id, Object val)
     {
-    	super(id, val);
+    	super(id, line + 1, line + 1, val);
     	
     	this.lineNumber = line;
     }

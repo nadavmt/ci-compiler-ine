@@ -8,6 +8,7 @@ package IC.Parser;
 %type Token
 %line
 %scanerror LexicalError
+%cup
 
 %{
 	public int getLineNumber()
