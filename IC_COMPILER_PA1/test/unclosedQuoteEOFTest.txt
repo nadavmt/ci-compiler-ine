@@ -1,0 +1,4 @@
+class Test {
+	boolean test (int i, string x)
+		{
+			x= "test

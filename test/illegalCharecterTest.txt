@@ -1,7 +1,0 @@
-class Test {
-	boolean test (int i, string x)
-		{
-			y&x= "test"
-			return (i==2);
-		}
-/* illegal charecter */
