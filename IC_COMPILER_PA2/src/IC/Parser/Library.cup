@@ -14,7 +14,19 @@ parser code
 	
 	public void unrecovered_syntax_error(Symbol current_token) throws SyntaxError
 	{
-		throw new SyntaxError(current_token.left, (String)current_token.value);
+		String tokenName = ((Token)current_token).name;
+		Object tokenValue = current_token.value;
+		
+		int lineNumber = current_token.left;
+		
+		String errorMsg = "Unexpected " + tokenName;
+		
+		if (tokenValue != null)
+		{
+			 errorMsg += " (" + tokenValue.toString() + ")";
+		}
+		
+		throw new SyntaxError(lineNumber, errorMsg);
 	}
 	
 	public void syntax_error(Symbol current_token) {}
