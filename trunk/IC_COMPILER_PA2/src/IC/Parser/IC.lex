@@ -32,7 +32,7 @@ package IC.Parser;
 %eofval{	
  	if (allowEOF)
  	{
- 		return new Token(yyline,sym.EOF);
+ 		return new Token(yyline, sym.EOF, "end of file");
  	}
  	else
  	{
@@ -80,31 +80,31 @@ QUOTE = [\"]
 <LONG_COMMENT_AFTER_STAR> [^/*] { yybegin(LONG_COMMENT); }
 
 /**** brackets, parenthesis, curly brackets ****/
-<YYINITIAL> "(" { return new Token(yyline, sym.LP); }
-<YYINITIAL> ")" { return new Token(yyline, sym.RP); }
-<YYINITIAL> "[" { return new Token(yyline, sym.LB); }
-<YYINITIAL> "]" { return new Token(yyline, sym.RB); }
-<YYINITIAL> "{" { return new Token(yyline, sym.LCBR); }
-<YYINITIAL> "}" { return new Token(yyline, sym.RCBR); }
+<YYINITIAL> "(" { return new Token(yyline, sym.LP, "("); }
+<YYINITIAL> ")" { return new Token(yyline, sym.RP, ")"); }
+<YYINITIAL> "[" { return new Token(yyline, sym.LB, "["); }
+<YYINITIAL> "]" { return new Token(yyline, sym.RB, "]"); }
+<YYINITIAL> "{" { return new Token(yyline, sym.LCBR, "{"); }
+<YYINITIAL> "}" { return new Token(yyline, sym.RCBR, "}"); }
 
 /**** mathematics operations ****/
-<YYINITIAL> "/" { return new Token(yyline, sym.DIVIDE); }
-<YYINITIAL> "%" { return new Token(yyline, sym.MOD); } 
-<YYINITIAL> "*" { return new Token(yyline, sym.MULTIPLY); }
-<YYINITIAL> "+" { return new Token(yyline, sym.PLUS); }
-<YYINITIAL> "=" { return new Token(yyline, sym.ASSIGN); }
+<YYINITIAL> "/" { return new Token(yyline, sym.DIVIDE, "/"); }
+<YYINITIAL> "%" { return new Token(yyline, sym.MOD, "%"); } 
+<YYINITIAL> "*" { return new Token(yyline, sym.MULTIPLY, "*"); }
+<YYINITIAL> "+" { return new Token(yyline, sym.PLUS, "+"); }
+<YYINITIAL> "=" { return new Token(yyline, sym.ASSIGN, "="); }
+<YYINITIAL> "-" { return new Token(yyline, sym.MINUS, "-");	}
 
 /**** logical operations ****/
-<YYINITIAL> "-" { return new Token(yyline, sym.MINUS);	}
-<YYINITIAL> "!=" { return new Token(yyline, sym.NEQUAL); }
-<YYINITIAL> "==" { return new Token(yyline, sym.EQUAL); }
-<YYINITIAL> ">=" { return new Token(yyline, sym.GTE); }
-<YYINITIAL> ">" { return new Token(yyline, sym.GT); }
-<YYINITIAL> "<=" { return new Token(yyline, sym.LTE); }
-<YYINITIAL> "<" { return new Token(yyline, sym.LT); }
-<YYINITIAL> "!" { return new Token(yyline, sym.LNEG); }
-<YYINITIAL> "&&" { return new Token(yyline, sym.LAND); }
-<YYINITIAL> "||" { return new Token(yyline, sym.LOR); }
+<YYINITIAL> "!=" { return new Token(yyline, sym.NEQUAL, "!="); }
+<YYINITIAL> "==" { return new Token(yyline, sym.EQUAL, "=="); }
+<YYINITIAL> ">=" { return new Token(yyline, sym.GTE, ">="); }
+<YYINITIAL> ">" { return new Token(yyline, sym.GT, ">"); }
+<YYINITIAL> "<=" { return new Token(yyline, sym.LTE, "<="); }
+<YYINITIAL> "<" { return new Token(yyline, sym.LT, "<"); }
+<YYINITIAL> "!" { return new Token(yyline, sym.LNEG, "!"); }
+<YYINITIAL> "&&" { return new Token(yyline, sym.LAND, "&&"); }
+<YYINITIAL> "||" { return new Token(yyline, sym.LOR, "||"); }
 
 /**** positive numbers ****/
 <YYINITIAL> [0]+({NUMBER})+ { throw new LexicalError(yyline, "no leading zeros");}
@@ -112,7 +112,7 @@ QUOTE = [\"]
 							try
 							{								
 								Integer.parseInt(yytext());
-								return new Token(yyline, sym.INTEGER, Integer.parseInt(yytext()));
+								return new Token(yyline, sym.INTEGER, "integer value", Integer.parseInt(yytext()));
 							}
 							catch (NumberFormatException e)
 							{
@@ -133,7 +133,7 @@ QUOTE = [\"]
 						illegalLine = 0;
 						yybegin(YYINITIAL);
 						returnString += "\"";
-						return new Token(yyline, sym.QUOTE, returnString);
+						return new Token(yyline, sym.QUOTE, "string value", returnString);
 					}
 <IN_QUOTE>	{NEWLINE} { throw new LexicalError(yyline, "must close String QUOTE before end of line"); }
 <IN_QUOTE>	"\\n" { returnString += "\\n"; }
@@ -152,34 +152,34 @@ QUOTE = [\"]
 				}
 
 /**** annotations ****/
-<YYINITIAL> "." { return new Token(yyline, sym.DOT); }
-<YYINITIAL> "," { return new Token(yyline, sym.COMMA); }
-<YYINITIAL> ";" { return new Token(yyline, sym.SEMI); }
+<YYINITIAL> "." { return new Token(yyline, sym.DOT, "."); }
+<YYINITIAL> "," { return new Token(yyline, sym.COMMA, ","); }
+<YYINITIAL> ";" { return new Token(yyline, sym.SEMI, ";"); }
 
 /**** keywords ****/
-<YYINITIAL> "void" { return new Token(yyline, sym.VOID); }
-<YYINITIAL> "boolean" { return new Token(yyline, sym.BOOLEAN); }
-<YYINITIAL> "int" { return new Token(yyline, sym.INT); }
-<YYINITIAL> "string" { return new Token(yyline, sym.STRING); }
-<YYINITIAL> "static" { return new Token(yyline, sym.STATIC); }
-<YYINITIAL> "if" { return new Token(yyline, sym.IF); }
-<YYINITIAL> "else" { return new Token(yyline, sym.ELSE); }
-<YYINITIAL> "while" { return new Token(yyline, sym.WHILE); }
-<YYINITIAL> "continue" { return new Token(yyline, sym.CONTINUE); }
-<YYINITIAL> "break" { return new Token(yyline, sym.BREAK); }
-<YYINITIAL> "return" { return new Token(yyline, sym.RETURN); }
-<YYINITIAL> "class" { return new Token(yyline, sym.CLASS); }
-<YYINITIAL> "extends" { return new Token(yyline, sym.EXTENDS); }
-<YYINITIAL> "this" { return new Token(yyline, sym.THIS); }
-<YYINITIAL> "new" { return new Token(yyline, sym.NEW); } 
-<YYINITIAL> "false" { return new Token(yyline, sym.FALSE); }
-<YYINITIAL> "true" { return new Token(yyline, sym.TRUE); }
-<YYINITIAL> "null" { return new Token(yyline, sym.NULL); }
-<YYINITIAL> "length" { return new Token(yyline, sym.LENGTH); }  
+<YYINITIAL> "void" { return new Token(yyline, sym.VOID, "void"); }
+<YYINITIAL> "boolean" { return new Token(yyline, sym.BOOLEAN, "boolean"); }
+<YYINITIAL> "int" { return new Token(yyline, sym.INT, "int"); }
+<YYINITIAL> "string" { return new Token(yyline, sym.STRING, "string"); }
+<YYINITIAL> "static" { return new Token(yyline, sym.STATIC, "static"); }
+<YYINITIAL> "if" { return new Token(yyline, sym.IF, "if"); }
+<YYINITIAL> "else" { return new Token(yyline, sym.ELSE, "else"); }
+<YYINITIAL> "while" { return new Token(yyline, sym.WHILE, "while"); }
+<YYINITIAL> "continue" { return new Token(yyline, sym.CONTINUE, "continue"); }
+<YYINITIAL> "break" { return new Token(yyline, sym.BREAK, "break"); }
+<YYINITIAL> "return" { return new Token(yyline, sym.RETURN, "return"); }
+<YYINITIAL> "class" { return new Token(yyline, sym.CLASS, "class"); }
+<YYINITIAL> "extends" { return new Token(yyline, sym.EXTENDS, "extends"); }
+<YYINITIAL> "this" { return new Token(yyline, sym.THIS, "this"); }
+<YYINITIAL> "new" { return new Token(yyline, sym.NEW, "new"); } 
+<YYINITIAL> "false" { return new Token(yyline, sym.FALSE, "false"); }
+<YYINITIAL> "true" { return new Token(yyline, sym.TRUE, "true"); }
+<YYINITIAL> "null" { return new Token(yyline, sym.NULL, "null"); }
+<YYINITIAL> "length" { return new Token(yyline, sym.LENGTH, "length"); }  
      				 
 /**** identifier ****/
-<YYINITIAL> {IDENTIFIER} { return new Token(yyline, sym.ID, yytext()); }
-<YYINITIAL> {CLASS_IDENTIFIER} { return new Token(yyline, sym.CLASS_ID, yytext()); }
+<YYINITIAL> {IDENTIFIER} { return new Token(yyline, sym.ID, "identifier", yytext()); }
+<YYINITIAL> {CLASS_IDENTIFIER} { return new Token(yyline, sym.CLASS_ID, "class identifier", yytext()); }
 <YYINITIAL> ({DIGIT})+({LETTER})+ { throw new LexicalError(yyline, "identifiers cannot begin with digits"); }
 
 /**** illegal charecters - if we got here it means it didn't fit any prior one ****/

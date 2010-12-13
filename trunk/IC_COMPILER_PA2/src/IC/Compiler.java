@@ -117,17 +117,17 @@ public class Compiler
     	}
     	catch (SyntaxError se)
     	{
-    		System.err.println(currentFile + ": Syntax error at line " + se.getLineNumber() + ": " + se.getMessage());
+    		System.err.println(currentFile + ": Syntax error (line " + se.getLineNumber() + "): " + se.getMessage());
     		return;
     	}
     	catch (SemanticError se)
     	{
-    		System.err.println(currentFile + ": Semantic error at line " + se.getLineNumber() + ": " + se.getMessage());
+    		System.err.println(currentFile + ": Semantic error (line " + se.getLineNumber() + "): " + se.getMessage());
     		return;
     	}
     	catch (LexicalError le)
     	{
-    		System.err.println(currentFile + ": Lexical error at line " + le.getLineNumber() + ": " + le.getMessage());
+    		System.err.println(currentFile + ": Lexical error (line " + le.getLineNumber() + "): " + le.getMessage());
     		return;
     	}
     	catch (Exception e)

@@ -12,19 +12,21 @@ public class Token extends Symbol
 	// The line in the source file in which the token appears
 	public int lineNumber;
 	
+	// A name describing the token
+	public String name;
+	
 	// ctor for tokens with no value
-    public Token(int line, int id)
+    public Token(int line, int id, String name)
     {
-        super(id, line + 1, line + 1, null);
-        
-        this.lineNumber = line;
+    	this(line, id, name, null);
     }
     
     // ctor for tokens with a value
-    public Token(int line, int id, Object val)
+    public Token(int line, int id, String name, Object val)
     {
     	super(id, line + 1, line + 1, val);
     	
+    	this.name = name;
     	this.lineNumber = line;
     }
 }
