@@ -1,0 +1,16 @@
+class FirstClass extends SecondClass{
+	
+	static int f1()
+	{
+		int a = c;
+		int[] b = new int[5];
+		boolean c=true;
+		string d = "hey";
+		int[] b;
+	}
+	boolean f2(){return false ;}
+	string f3(int a, boolean b){}
+	
+}
+		
+	

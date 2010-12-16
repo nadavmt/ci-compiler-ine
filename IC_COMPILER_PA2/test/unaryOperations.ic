@@ -1,0 +1,8 @@
+class UnaryOpTest 
+{
+	void unaryCheck()
+	{
+		int y = -5;
+		boolean x = !z;
+	}
+}

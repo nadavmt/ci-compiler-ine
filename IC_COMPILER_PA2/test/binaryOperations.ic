@@ -1,0 +1,13 @@
+class BinaryOpTest {
+	void binaryCheck(){
+
+		int y = 2*5+(2*6)*3*(5+3);
+
+		boolean x = (z && y) || false || (!l&& (y==10));
+
+		boolean t = ( y!=15) && (z!=null);
+
+	}
+
+	
+}
