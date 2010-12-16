@@ -1,0 +1,99 @@
+Parsed D:\study\CompilationWorkspace\Compilation\IC_COMPILER_PA2\libic.sig successfully!
+
+1: Declaration of class: Library
+  2: Declaration of library method: println
+    2: Primitive data type: void
+    2: Parameter: s
+     2: Primitive data type: string
+  3: Declaration of library method: print
+    3: Primitive data type: void
+    3: Parameter: s
+     3: Primitive data type: string
+  4: Declaration of library method: printi
+    4: Primitive data type: void
+    4: Parameter: i
+     4: Primitive data type: int
+  5: Declaration of library method: printb
+    5: Primitive data type: void
+    5: Parameter: b
+     5: Primitive data type: boolean
+  7: Declaration of library method: readi
+    7: Primitive data type: int
+  8: Declaration of library method: readln
+    8: Primitive data type: string
+  9: Declaration of library method: eof
+    9: Primitive data type: boolean
+  11: Declaration of library method: stoi
+    11: Primitive data type: int
+    11: Parameter: s
+     11: Primitive data type: string
+    11: Parameter: n
+     11: Primitive data type: int
+  13: Declaration of library method: itos
+    13: Primitive data type: string
+    13: Parameter: i
+     13: Primitive data type: int
+  14: Declaration of library method: stoa
+    14: Primitive data type: 1-dimensional array of int
+    14: Parameter: s
+     14: Primitive data type: string
+  15: Declaration of library method: atos
+    15: Primitive data type: string
+    15: Parameter: a
+     15: Primitive data type: 1-dimensional array of int
+  17: Declaration of library method: random
+    17: Primitive data type: int
+    17: Parameter: n
+     17: Primitive data type: int
+  18: Declaration of library method: time
+    18: Primitive data type: int
+  19: Declaration of library method: exit
+    19: Primitive data type: int
+    19: Parameter: i
+     19: Primitive data type: int
+
+Parsed D:\study\CompilationWorkspace\Compilation\IC_COMPILER_PA2\test\binaryOperations.ic successfully!
+
+Abstract Syntax Tree: D:\study\CompilationWorkspace\Compilation\IC_COMPILER_PA2\test\binaryOperations.ic
+
+1: Declaration of class: BinaryOpTest
+  2: Declaration of virtual method: binaryCheck
+    2: Primitive data type: void
+    4: Declaration of local variable: y, with initial value
+      4: Primitive data type: int
+      4: Mathematical binary operation: addition
+        4: Mathematical binary operation: multiplication
+          4: Integer literal: 2
+          4: Integer literal: 5
+        4: Mathematical binary operation: multiplication
+          4: Mathematical binary operation: multiplication
+            4: Mathematical binary operation: multiplication
+              4: Integer literal: 2
+              4: Integer literal: 6
+            4: Integer literal: 3
+          4: Mathematical binary operation: addition
+            4: Integer literal: 5
+            4: Integer literal: 3
+    6: Declaration of local variable: x, with initial value
+      6: Primitive data type: boolean
+      6: Logical binary operation: logical or
+        6: Logical binary operation: logical or
+          6: Logical binary operation: logical and
+            6: Reference to variable: z
+            6: Reference to variable: y
+          6: Boolean literal: false
+        6: Logical binary operation: logical and
+          6: Logical unary operation: logical negation
+           6: Reference to variable: l
+          6: Logical binary operation: equality
+            6: Reference to variable: y
+            6: Integer literal: 10
+    8: Declaration of local variable: t, with initial value
+      8: Primitive data type: boolean
+      8: Logical binary operation: logical and
+        8: Logical binary operation: inequality
+          8: Reference to variable: y
+          8: Integer literal: 15
+        8: Logical binary operation: inequality
+          8: Reference to variable: z
+          8: Literal: null
