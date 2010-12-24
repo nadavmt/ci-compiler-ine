@@ -1,5 +1,6 @@
 package IC.SemanticAnalysis;
 
+import java.text.FieldPosition;
 import java.util.Collection;
 
 import sun.nio.cs.ext.ISCII91;
@@ -18,31 +19,40 @@ public class TableCreator implements Visitor {
 	
 	private Object visitMethod(Method method)
 	{
-		SymbolTable t = new MethodSymbolTable(method.getName(),
+		try//itai:24.12
+		{
+			SymbolTable t = new MethodSymbolTable(method.getName(),
 				method.getEnclosingScope());
 		
-		if (!addSymbols(t, method.getFormals()))
-			return null;
-		
-		for (Statement statement : method.getStatements())
-		{
-			statement.setEnclosingScope(t);
-			if (statement.accept(this) == null)
+			if (!addSymbols(t, method.getFormals()))
 				return null;
-		}
 		
-		Type returnType = (Type)method.getType().accept(this);
-		if (returnType == null)
+			for (Statement statement : method.getStatements())
+			{
+				statement.setEnclosingScope(t);
+				if (statement.accept(this) == null)
+					return null;
+			}
+			
+			Type returnType = (Type)method.getType().accept(this);
+			if (returnType == null)
 			return null;
 		
-		Type[] paramTypes = new Type[method.getFormals().size()];
-		for (int i = 0; i < paramTypes.length; i++)
-		{
-			Formal f = method.getFormals().get(i);
-			paramTypes[i] = t.getSymbol(f.getName()).getType(); 
+			Type[] paramTypes = new Type[method.getFormals().size()];
+			for (int i = 0; i < paramTypes.length; i++)
+			{
+				Formal f = method.getFormals().get(i);
+				paramTypes[i] = t.getSymbol(f.getName()).getType(); 
+			}
+			
+			return new Symbol(method.getName(), Kind.Method, new MethodType(paramTypes, returnType));
 		}
-		
-		return new Symbol(method.getName(), Kind.Method, new MethodType(paramTypes, returnType));
+		catch (SemanticError e)
+		{
+			e.setLineNumber(method.getLine());
+			System.err.println(e.getMessage());
+			return null;
+		}
 	
 	}
 
@@ -130,6 +140,7 @@ public class TableCreator implements Visitor {
 	}
 	
 	public Object visit(PrimitiveType type) {
+		//TODO: check how to add arrays in the correct way
 		if (type.getDimension() > 0)
 			return TypeTable.arrayType(type);
 		
@@ -233,165 +244,139 @@ public class TableCreator implements Visitor {
 		try {
 			localVariable.getEnclosingScope().addEntry(s);
 		} catch (SemanticError e) {
-			return null;
+			//i added these lines
+			e.setLineNumber(localVariable.getLine());
+			System.err.println(e.getMessage());
+			return null;//why didn't we print the error message
 		}
 		return s;
 	}
-
+/*itai 24.12*/
 	public Object visit(VariableLocation location) {
-		StringBuffer output = new StringBuffer();
-
-		indent(output, location);
-		output.append("Reference to variable: " + location.getName());
-		if (location.isExternal())
-			output.append(", in external scope");
-		if (location.isExternal()) {
-			++depth;
-			output.append(location.getLocation().accept(this));
-			--depth;
+		if (location.isExternal()) //checks that the location isn't null
+		{
+			location.getLocation().setEnclosingScope(location.getEnclosingScope());
+			if (location.getLocation().accept(this)==null)
+				return null;
 		}
-		return output.toString();
+		else
+			try{
+			location.getEnclosingScope().getSymbol(location.getName());
+				}
+			catch (SemanticError e)
+			{
+				e.setLineNumber(location.getLine());
+				System.err.println(e.getMessage());
+				return null;
+			}
+		return Boolean.TRUE;
 	}
+	
 
-	public Object visit(ArrayLocation location) {
-		StringBuffer output = new StringBuffer();
-
-		indent(output, location);
-		output.append("Reference to array");
-		depth += 2;
-		output.append(location.getArray().accept(this));
-		output.append(location.getIndex().accept(this));
-		depth -= 2;
-		return output.toString();
+	public Object visit(ArrayLocation location) 
+	{
+		location.getArray().setEnclosingScope(location.getEnclosingScope());
+		location.getIndex().setEnclosingScope(location.getEnclosingScope());
+		if ((location.getIndex().accept(this)==null)|| (location.getArray().accept(this)==null))
+			return null;
+		return Boolean.TRUE;
 	}
-
-	public Object visit(StaticCall call) {
-		StringBuffer output = new StringBuffer();
-
-		indent(output, call);
-		output.append("Call to static method: " + call.getName()
-				+ ", in class " + call.getClassName());
-		depth += 2;
-		for (Expression argument : call.getArguments())
-			output.append(argument.accept(this));
-		depth -= 2;
-		return output.toString();
+		
+	private Object iterateOverParams(Call call)//will be used for both static and virtual call
+	{
+		for (Expression e : call.getArguments())
+		{
+			e.setEnclosingScope(call.getEnclosingScope());
+			if (e.accept(this)==null)
+				return null;
+		}
+		return Boolean.TRUE;
 	}
-
-	public Object visit(VirtualCall call) {
-		StringBuffer output = new StringBuffer();
-
-		indent(output, call);
-		output.append("Call to virtual method: " + call.getName());
-		if (call.isExternal())
-			output.append(", in external scope");
-		depth += 2;
-		if (call.isExternal())
-			output.append(call.getLocation().accept(this));
-		for (Expression argument : call.getArguments())
-			output.append(argument.accept(this));
-		depth -= 2;
-		return output.toString();
+	
+	public Object visit(StaticCall call) 
+	{
+		return iterateOverParams(call);
 	}
-
+	
+	public Object visit(VirtualCall call) 
+	{
+		if (call.isExternal())//location !=null
+		{
+			call.getLocation().setEnclosingScope(call.getEnclosingScope());
+			if (call.getLocation().accept(this)==null)
+				return null;
+		}
+		
+		return iterateOverParams(call);
+	}
+	
 	public Object visit(This thisExpression) {
-		StringBuffer output = new StringBuffer();
-
-		indent(output, thisExpression);
-		output.append("Reference to 'this' instance");
-		return output.toString();
+		return Boolean.TRUE;
 	}
 
 	public Object visit(NewClass newClass) {
-		StringBuffer output = new StringBuffer();
-
-		indent(output, newClass);
-		output.append("Instantiation of class: " + newClass.getName());
-		return output.toString();
+		return Boolean.TRUE;
 	}
 
-	public Object visit(NewArray newArray) {
-		StringBuffer output = new StringBuffer();
-
-		indent(output, newArray);
-		output.append("Array allocation");
-		depth += 2;
-		output.append(newArray.getType().accept(this));
-		output.append(newArray.getSize().accept(this));
-		depth -= 2;
-		return output.toString();
+	public Object visit(NewArray newArray) 
+	{
+		newArray.getType().setEnclosingScope(newArray.getEnclosingScope());
+		newArray.getSize().setEnclosingScope(newArray.getEnclosingScope());
+		if ((newArray.getType().accept(this)==null)|| (newArray.getSize().accept(this)==null))
+			return null;
+		return Boolean.TRUE;
 	}
 
-	public Object visit(Length length) {
-		StringBuffer output = new StringBuffer();
 
-		indent(output, length);
-		output.append("Reference to array length");
-		++depth;
-		output.append(length.getArray().accept(this));
-		--depth;
-		return output.toString();
+	public Object visit(Length length) 
+	{
+		length.getArray().setEnclosingScope(length.getEnclosingScope());
+		if (length.getArray().accept(this)==null)
+			return null;
+		return Boolean.TRUE;
 	}
 
-	public Object visit(MathBinaryOp binaryOp) {
-		StringBuffer output = new StringBuffer();
+	private Object handleSingleExpression(Expression target, SymbolTable scope)
+	{
+		target.setEnclosingScope(scope);
+		return target.accept(this);
+	}
+	
+	private Object binaryOperationHandler(BinaryOp binaryOp)
+	{
+		if (handleSingleExpression(binaryOp.getFirstOperand(),binaryOp.getEnclosingScope())==null)
+				return null;
+		return (handleSingleExpression(binaryOp.getFirstOperand(),binaryOp.getEnclosingScope()));
+	}
+	
+	public Object visit(MathBinaryOp binaryOp) 
+	{
+		return binaryOperationHandler(binaryOp);
+	}
+		
 
-		indent(output, binaryOp);
-		output.append("Mathematical binary operation: "
-				+ binaryOp.getOperator().getDescription());
-		depth += 2;
-		output.append(binaryOp.getFirstOperand().accept(this));
-		output.append(binaryOp.getSecondOperand().accept(this));
-		depth -= 2;
-		return output.toString();
+	public Object visit(LogicalBinaryOp binaryOp) 
+	{
+		return binaryOperationHandler(binaryOp);	
 	}
 
-	public Object visit(LogicalBinaryOp binaryOp) {
-		StringBuffer output = new StringBuffer();
-
-		indent(output, binaryOp);
-		output.append("Logical binary operation: "
-				+ binaryOp.getOperator().getDescription());
-		depth += 2;
-		output.append(binaryOp.getFirstOperand().accept(this));
-		output.append(binaryOp.getSecondOperand().accept(this));
-		depth -= 2;
-		return output.toString();
+	public Object visit(MathUnaryOp unaryOp) 
+	{
+		return handleSingleExpression(unaryOp.getOperand(), unaryOp.getEnclosingScope());
 	}
 
-	public Object visit(MathUnaryOp unaryOp) {
-		StringBuffer output = new StringBuffer();
-
-		indent(output, unaryOp);
-		output.append("Mathematical unary operation: "
-				+ unaryOp.getOperator().getDescription());
-		++depth;
-		output.append(unaryOp.getOperand().accept(this));
-		--depth;
-		return output.toString();
+	public Object visit(LogicalUnaryOp unaryOp) 
+	{
+		return handleSingleExpression(unaryOp.getOperand(), unaryOp.getEnclosingScope());
 	}
 
-	public Object visit(LogicalUnaryOp unaryOp) {
-		StringBuffer output = new StringBuffer();
-
-		indent(output, unaryOp);
-		output.append("Logical unary operation: "
-				+ unaryOp.getOperator().getDescription());
-		++depth;
-		output.append(unaryOp.getOperand().accept(this));
-		--depth;
-		return output.toString();
+	public Object visit(Literal literal) 
+	{
+		return Boolean.TRUE;
 	}
 
-	public Object visit(Literal literal) {
-		StringBuffer output = new StringBuffer();
-
-		indent(output, literal);
-		output.append(literal.getType().getDescription() + ": "
-				+ literal.getType().toFormattedString(literal.getValue()));
-		return output.toString();
-	}
-
+	/**where do we ever use expression block????**/
+	
 	public Object visit(ExpressionBlock expressionBlock) {
 		StringBuffer output = new StringBuffer();
 
@@ -404,19 +389,23 @@ public class TableCreator implements Visitor {
 	}
 
 	@Override
-	public Object visit(FieldOrMethod fieldOrMethod) {
-		StringBuffer output = new StringBuffer();
-
-		indent(output, fieldOrMethod);
-		output.append("Class Members:");
-		depth += 2;
+	public Object visit(FieldOrMethod fieldOrMethod) 
+	{
 		for (Field field : fieldOrMethod.getFields())
-			output.append(field.accept(this));
-		
+		{
+			field.setEnclosingScope(fieldOrMethod.getEnclosingScope());
+			if (field.accept(this)==null)
+				return null;
+		}
 		for (Method method : fieldOrMethod.getMethods())
-			output.append(method.accept(this));
-		
-		depth -= 2;
-		return output.toString();
+		{
+			method.setEnclosingScope(fieldOrMethod.getEnclosingScope());
+			if (visitMethod(method)==null)
+				return null;
+		}
+		return Boolean.TRUE;
 	}
 }
+t(this));
+		--depth;
+		re
