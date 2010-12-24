@@ -36,9 +36,13 @@ public class SymbolTable {
 		  return id;
 	  }
 	  
-	  public Symbol getSymbol(String id)
+	  public Symbol getSymbol(String id) throws SemanticError
 	  {
-		  return entries.get(id);
+		  Symbol s = entries.get(id);
+		  if (s==null)
+			  throw new SemanticError("Identifier " + id + " does not exist"); 
+		  return s;
+		 // return entries.get(id);
 	  }
 	  
 	  public Map<String,Boolean> getFref()
@@ -46,3 +50,22 @@ public class SymbolTable {
 		  return fref;
 	  } 
 }
+
+		  entries.put(sym.getId(), sym);
+	  }
+	  
+	  public SymbolTable getParent()
+	  {
+		  return parentSymbolTable;
+	  }
+	  
+	  public String getId()
+	  {
+		  return id;
+	  }
+	  
+	  public Symbol getSymbol(String id) throws SemanticError
+	  {
+		  Symbol s = entries.get(id);
+		  if (s==null)
+			  throw new Sem
