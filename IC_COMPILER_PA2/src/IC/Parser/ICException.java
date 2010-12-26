@@ -29,4 +29,8 @@ public class ICException extends Exception
     {
     	return lineNumber;
     }
+    public void setLineNumber(int line)
+    {
+    	this.lineNumber=line;
+    }
 }

@@ -21,4 +21,9 @@ public class Continue extends Statement {
 		super(line);
 	}
 
+	@Override
+	public boolean isBreakContinue()
+	{
+		return true;
+	}
 }

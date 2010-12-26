@@ -32,4 +32,23 @@ public abstract class Type extends ASTNode {
 	public void incrementDimension() {
 		++dimension;
 	}
+	
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (!(obj instanceof Type))
+		{
+			return false;
+		}
+		
+		Type t = (Type)obj;
+		
+		return ((this.dimension == t.dimension) &&
+				(this.getName().equals(t.getName())));
+	}
+	
+	public boolean isUserType()
+	{
+		return false;
+	}
 }
