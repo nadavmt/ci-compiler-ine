@@ -17,4 +17,8 @@ public abstract class Statement extends ASTNode {
 		super(line);
 	}
 
+	public boolean isBreakContinue()
+	{
+		return false;
+	}
 }

@@ -30,4 +30,9 @@ public class UserType extends Type {
 		return name;
 	}
 
+	@Override
+	public boolean isUserType()
+	{
+		return true;
+	}
 }

@@ -20,5 +20,10 @@ public class Break extends Statement {
 	public Break(int line) {
 		super(line);
 	}
-
+	
+	@Override
+	public boolean isBreakContinue()
+	{
+		return true;
+	}
 }
