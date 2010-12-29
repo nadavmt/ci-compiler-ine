@@ -5,11 +5,12 @@ import java.util.Map;
 
 import IC.Parser.SemanticError;
 
-public class SymbolTable {
+public abstract class SymbolTable {
 	  /** map from String to Symbol **/
 	  protected Map<String,Symbol> entries;
 	  protected String id;
 	  protected SymbolTable parentSymbolTable;
+	  
 	  
 	  public SymbolTable(String id, SymbolTable parent) {
 	    this.id = id;
@@ -47,4 +48,6 @@ public class SymbolTable {
 	  public boolean symbolExists(String id) {
 		  return (entries.get(id) != null);
 	  }
+	  
+	  public abstract SymbolTableKind getTableKind(); 
 }

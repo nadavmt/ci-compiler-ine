@@ -55,7 +55,7 @@ public class TableCreator implements Visitor {
 	}
 
 	private Object visitMethod(Method method) {
-		try// itai:24.12
+		try
 		{
 			SymbolTable t = new MethodSymbolTable(method.getName(), method.getEnclosingScope());
 
@@ -79,6 +79,7 @@ public class TableCreator implements Visitor {
 			}
 
 			return new Symbol(method.getName(), Kind.Method, new MethodType(paramTypes, returnType));
+			
 		} catch (SemanticError e) {
 			e.setLineNumber(method.getLine());
 			System.err.println(e.getMessage());
@@ -170,7 +171,6 @@ public class TableCreator implements Visitor {
 		if (!addSymbols(t, program.getClasses()))
 			return null;
 
-		// TODO: add second pass
 		return t;
 	}
 
@@ -181,7 +181,9 @@ public class TableCreator implements Visitor {
 			return null;
 		if (!addSymbols(t, icClass.getMethods()))
 			return null;
-
+		for (Method m : icClass.getMethods())
+			t.setStaticEntry(m.getName(), m.isStatic());
+		
 		return new Symbol(icClass.getName(), Kind.Class, new ClassType(icClass));
 	}
 

@@ -1,8 +1,11 @@
 package IC.SemanticAnalysis;
 
+import IC.BinaryOps;
+import IC.LiteralTypes;
 import IC.AST.ArrayLocation;
 import IC.AST.Assignment;
 import IC.AST.Break;
+import IC.AST.Call;
 import IC.AST.CallStatement;
 import IC.AST.Continue;
 import IC.AST.ExpressionBlock;
@@ -349,129 +352,419 @@ public class SemanticChecker implements Visitor {
 			return null;
 		}
 	}
-
-	///////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////
-	////////////WE ARE HERE//////////
-	/////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////
 	
 	@Override
 	public Object visit(VariableLocation location)
 	{
 		try
 		{
-			SymbolTable t = location.getEnclosingScope();
-			while (!t.symbolExists(location.getName()))
-			return location.getEnclosingScope().getSymbol(location.getName()).getType();
+			Type externalType = null;	
+			SymbolTable t = null;
+			
+			if (location.isExternal())//gets the location's table
+			{	
+				externalType = (Type)location.getLocation().accept(this);
+				if (externalType == null)
+					return null;
+				if (!externalType.isUserType())
+					throw new SemanticError(location.getLine(),"can only use location of user types");
+			
+				t = ClassTable.getClassTable(externalType.getName());	
+			}
+			else //if it's internal
+			{
+				t = location.getEnclosingScope();
+			}
+			
+			 //if this is the global scope	
+			while (t!=null)
+			{
+				if (t.symbolExists(location.getName()))
+				{				
+					return t.getSymbol(location.getName()).getType();
+				}
+				t = t.getParent();		
+			}
+			throw new SemanticError(location.getLine(),"cannot find "+ location.getName() + (externalType==null? "": (" in " + externalType.getName())));
+			
 		}
 		catch (SemanticError e)
 		{
+			System.err.println(e.getMessage());
+			return null;
+		}
+	}
+
+	@Override
+	public Object visit(ArrayLocation location) 
+	{
+		try
+		{
+			Type arrType = (Type) location.getArray().accept(this);
+			if (arrType == null)
+				return null;
+			
+			if (arrType.getDimension()==0)
+				throw new SemanticError(location.getLine(),arrType.getName() + " is not an array type");
+		
+			Type indexType = (Type) location.getIndex().accept(this);
+			
+			if (indexType==null)
+				return null;
+			
+			if (!indexType.getName().equals(IntType.NAME))
+				throw new SemanticError(location.getLine(),"the index is not of type integer");
+			Type returnType = arrType.clone();
+			returnType.setDimension(returnType.getDimension()-1);
+			return returnType;
 			
 		}
-		
-		
-		/*
-		 * 		if (location.isExternal()) // checks that the location isn't null
+		catch(SemanticError e)
 		{
-			location.getLocation().setEnclosingScope(location.getEnclosingScope());
-			if (location.getLocation().accept(this) == null)
-				return null;
-		} else
-			try {
-				location.getEnclosingScope().getSymbol(location.getName());
-			} catch (SemanticError e) {
-				e.setLineNumber(location.getLine());
-				System.err.println(e.getMessage());
-				return null;
+			System.err.println(e.getMessage());
+			return null;
+		}	
+	}
+		
+	private Object checkMethodParams(MethodType mt,Call call)
+	{
+		try
+		{
+			if (mt.getParamTypes().length != call.getArguments().size())//check param number
+				throw new SemanticError(call.getLine(),"number of params given does not match");
+			
+			for (int i=0;i<call.getArguments().size();i++)
+			{
+				Type param = (Type)call.getArguments().get(i).accept(this);
+				if (param == null)
+					return null;
+				if (!checkHierarchy(mt.getParamTypes()[i], param))
+					throw new SemanticError(call.getLine(),"the "+ i + " parameter does not match expected type");
 			}
-		return Boolean.TRUE;
-		 */
-		 */
+			return Boolean.TRUE;
+		}
+		catch (SemanticError e)
+		{
+			System.err.println(e.getMessage());
+			return null;
+		}
 	}
-
+	
+	
 	@Override
-	public Object visit(ArrayLocation location) {
-		// TODO Auto-generated method stub
-		return null;
+	public Object visit(StaticCall call) 
+	{
+		try
+		{
+			SymbolTable t = ClassTable.getClassTable(call.getClassName());
+			if (t == null)
+				throw new SemanticError(call.getLine(),"the class " + call.getClassName()+ " is undefined");	
+			while (t.getParent()!=null)
+			{
+				if (t.symbolExists(call.getName()))
+				{
+					Type memberType = t.getSymbol(call.getName()).getType();
+					if (memberType instanceof MethodType)
+					{
+						MethodType mt = (MethodType) memberType;
+						ClassSymbolTable ct = (ClassSymbolTable) t;
+						if (!ct.isStaticMethod(call.getName()))
+							throw new SemanticError(call.getLine(),"cannot call a virtual method in current context");
+						if (checkMethodParams(mt,call) ==null)
+							return null;
+						return (mt.getReturnType());
+					}
+					else
+						throw new SemanticError(call.getLine(),call.getName() + " is not a method");
+				}		
+				t = t.getParent();
+			}
+			throw new SemanticError(call.getLine(),"the method "+call.getName()+ " is undefined");
+		}
+		catch (SemanticError e)
+		{
+			System.err.println(e.getMessage());
+			return null;
+		}
 	}
 
-	@Override
-	public Object visit(StaticCall call) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
+	
 	@Override
 	public Object visit(VirtualCall call) {
-		// TODO Auto-generated method stub
-		return null;
+		try
+		{
+			SymbolTable t;
+			if (call.isExternal())
+			{
+				Type externalType = (Type) call.getLocation().accept(this);
+				if (externalType == null)
+					return null;
+				if (!externalType.isUserType())
+					throw new SemanticError(call.getLine(),"can only use location of user types");
+				t = ClassTable.getClassTable(externalType.getName());		
+			}
+			else
+			{
+				t = call.getEnclosingScope();
+			}
+			while (t.getParent()!=null)
+			{
+				if (t.symbolExists(call.getName()))
+				{
+					Type memberType = t.getSymbol(call.getName()).getType();
+					if (memberType instanceof MethodType)
+					{
+						MethodType mt = (MethodType) memberType;
+						if (checkMethodParams(mt,call) ==null)
+							return null;
+						return (mt.getReturnType());
+					}
+					else
+						throw new SemanticError(call.getLine(),call.getName() + " is not a method");
+				}
+				t = t.getParent();
+			}
+			throw new SemanticError(call.getLine(),"undefined method "+ call.getName());
+		}
+		catch (SemanticError e)
+		{
+			System.err.println(e.getMessage());
+			return null;
+		}		
 	}
 
 	@Override
-	public Object visit(This thisExpression) {
-		// TODO Auto-generated method stub
-		return null;
+	public Object visit(This thisExpression) 
+	{
+		try
+		{
+			SymbolTable t = thisExpression.getEnclosingScope();
+			String enclosingMethodName = null;
+			while (t.getTableKind()!= SymbolTableKind.CLASS)//gets to the class enclosing the current call
+			{
+				if (t.getTableKind()== SymbolTableKind.METHOD)
+					enclosingMethodName = t.getId();
+				t = t.getParent();
+			}
+			if (enclosingMethodName==null)//should never happen
+				throw new SemanticError (thisExpression.getLine(),"this must be used in a method");
+			ClassSymbolTable ct = (ClassSymbolTable) t;
+			if (ct.isStaticMethod(enclosingMethodName))
+				throw new SemanticError(thisExpression.getLine(),"cannot use this in static context");
+			return new ClassType(ClassTable.getClassAST(t.getId()));
+		}
+		catch (SemanticError e)
+		{
+			System.err.println(e.getMessage());
+			return null;
+		}
 	}
 
 	@Override
 	public Object visit(NewClass newClass) {
-		// TODO Auto-generated method stub
-		return null;
+		try
+		{
+			ICClass c = ClassTable.getClassAST(newClass.getName());
+			if (c==null)
+				throw new SemanticError(newClass.getLine(),"class "+ newClass.getName()+ " is not defined");
+			return new ClassType(c);
+		}
+		catch (SemanticError e)
+		{
+			System.err.println(e.getMessage());
+			return null;
+		}		
 	}
 
 	@Override
 	public Object visit(NewArray newArray) {
-		// TODO Auto-generated method stub
-		return null;
+		try
+		{
+			Type elemType = (Type)newArray.getType().accept(this);
+			if (elemType == null)
+				return null;
+			if (elemType.getName().equals(VoidType.NAME) || elemType.getName().equals(NullType.NAME))
+				throw new SemanticError(newArray.getLine(),"cannot create an array from type null/void");
+			Type sizeType = (Type)newArray.getSize().accept(this);
+			if (sizeType== null)
+				return null;
+			if (!sizeType.getName().equals(IntType.NAME))
+				throw new SemanticError(newArray.getLine(),"array size must be of type int");
+			Type ret = elemType.clone();
+			ret.setDimension(elemType.getDimension()+1);
+			return ret;
+		}
+		catch (SemanticError e)
+		{
+			System.err.println(e.getMessage());
+			return null;
+		}			
 	}
 
 	@Override
-	public Object visit(Length length) {
-		// TODO Auto-generated method stub
-		return null;
+	public Object visit(Length length) 
+	{
+		try
+		{
+			Type arrType = (Type) length.getArray().accept(this);
+			if (arrType==null)
+				return null;
+			if(arrType.getDimension()==0)
+				throw new SemanticError(length.getLine(),"length can only be used on array types");
+			return new IntType();
+		}
+		catch (SemanticError e)
+		{
+			System.err.println(e.getMessage());
+			return null;
+		}			
 	}
-
+	
 	@Override
 	public Object visit(MathBinaryOp binaryOp) {
-		// TODO Auto-generated method stub
-		return null;
+		try
+		{
+			Type firstType = (Type) binaryOp.getFirstOperand().accept(this);
+			if (firstType == null)
+				return null;
+			Type secondType = (Type) binaryOp.getSecondOperand().accept(this);
+			if (secondType == null)
+				return null;
+			
+			if (!firstType.getName().equals(secondType.getName()))
+				throw new SemanticError(binaryOp.getLine(),"operands must be of the same type");
+			if ((!firstType.getName().equals(IntType.NAME)) || (!firstType.getName().equals(StringType.NAME)))
+				throw new SemanticError(binaryOp.getLine(),"cannot apply binary opps on " + firstType.getName());
+			if ((firstType.getName().equals(StringType.NAME))&& (binaryOp.getOperator()!=BinaryOps.PLUS))
+				throw new SemanticError(binaryOp.getLine(),"the only binary operations defined for Strings is PLUS");
+			return firstType.clone();
+		}
+		catch (SemanticError e)
+		{
+			System.err.println(e.getMessage());
+			return null;
+		}				
 	}
 
 	@Override
 	public Object visit(LogicalBinaryOp binaryOp) {
-		// TODO Auto-generated method stub
-		return null;
+		try
+		{
+			Type firstType = (Type) binaryOp.getFirstOperand().accept(this);
+			if (firstType == null)
+				return null;
+			Type secondType = (Type) binaryOp.getSecondOperand().accept(this);
+			if (secondType == null)
+				return null;
+			
+			if ((binaryOp.getOperator()==BinaryOps.LOR) ||
+				(binaryOp.getOperator()==BinaryOps.LAND))
+			{
+				if ((firstType.getName().equals(secondType.getName())) && firstType.getName().equals(BoolType.NAME))
+					return new BoolType();
+				else
+					throw new SemanticError(binaryOp.getLine(),"|| and && are only defined between two booleans");
+			}
+			if ((binaryOp.getOperator()==BinaryOps.GT) ||
+				(binaryOp.getOperator()==BinaryOps.GTE)||
+				(binaryOp.getOperator()==BinaryOps.LT)||
+				(binaryOp.getOperator()==BinaryOps.LTE))
+			{
+				if ((firstType.getName().equals(secondType.getName())) && firstType.getName().equals(IntType.NAME))
+					return new BoolType();
+				else
+					throw new SemanticError(binaryOp.getLine(),"<,<=,>,>= are only defined between two integers");
+			}
+			else
+			{
+				if ((checkHierarchy(firstType, secondType)) || checkHierarchy(secondType, firstType))
+					return new BoolType();
+				else
+					throw new SemanticError(binaryOp.getLine(),"the two types are not subTypes of each other");
+			}		
+		}
+		catch (SemanticError e)
+		{
+			System.err.println(e.getMessage());
+			return null;
+		}				
+		
 	}
 
 	@Override
 	public Object visit(MathUnaryOp unaryOp) {
-		// TODO Auto-generated method stub
-		return null;
+		try
+		{
+			Type t = (Type) unaryOp.getOperand().accept(this);
+			if (t==null)
+				return null;
+			if (t.getName().equals(IntType.NAME))
+				return new IntType();
+			else
+				throw new SemanticError(unaryOp.getLine(),"- can only be used before an integer");	
+		}
+		catch (SemanticError e)
+		{
+			System.err.println(e.getMessage());
+			return null;
+		}				
 	}
 
 	@Override
 	public Object visit(LogicalUnaryOp unaryOp) {
-		// TODO Auto-generated method stub
-		return null;
+		try
+		{
+			Type t = (Type) unaryOp.getOperand().accept(this);
+			if (t==null)
+				return null;
+			if (t.getName().equals(BoolType.NAME))
+				return new BoolType();
+			else
+				throw new SemanticError(unaryOp.getLine(),"! can only be used before a boolean");	
+		}
+		catch (SemanticError e)
+		{
+			System.err.println(e.getMessage());
+			return null;
+		}
 	}
 
 	@Override
-	public Object visit(Literal literal) {
-		// TODO Auto-generated method stub
-		return null;
+	public Object visit(Literal literal) 
+	{
+		LiteralTypes lt = literal.getType();
+		switch (lt)
+		{
+		case INTEGER : return new IntType();
+		case STRING : return new StringType();
+		case TRUE :
+		case FALSE: return new BoolType();
+		case NULL : return new NullType();
+		}
+		return null;//shouldn't get here
 	}
 
 	@Override
-	public Object visit(ExpressionBlock expressionBlock) {
-		// TODO Auto-generated method stub
-		return null;
+	public Object visit(ExpressionBlock expressionBlock) 
+	{
+		return expressionBlock.getExpression().accept(this);
 	}
 
 	@Override
-	public Object visit(FieldOrMethod fieldOrMethod) {
-		// TODO Auto-generated method stub
-		return null;
+	public Object visit(FieldOrMethod fieldOrMethod) 
+	{
+		for (Field field : fieldOrMethod.getFields()) 
+		{
+			if (field.accept(this) == null)
+				return null;
+		}
+		for (Method method : fieldOrMethod.getMethods()) 
+		{
+			if (method.accept(this) == null)
+				return null;
+		}
+		return Boolean.TRUE;
 	}
+	
 
 }

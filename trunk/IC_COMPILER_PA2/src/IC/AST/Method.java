@@ -16,6 +16,7 @@ public abstract class Method extends ASTNode {
 	protected List<Formal> formals;
 
 	protected List<Statement> statements;
+	
 
 	/**
 	 * Constructs a new method node. Used by subclasses.
@@ -53,4 +54,7 @@ public abstract class Method extends ASTNode {
 	public List<Statement> getStatements() {
 		return statements;
 	}
+	
+	public abstract boolean isStatic();
+
 }

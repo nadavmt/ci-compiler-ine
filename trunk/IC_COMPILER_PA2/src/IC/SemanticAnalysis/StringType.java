@@ -13,4 +13,10 @@ public class StringType extends Type
 	{
 		super(NAME, dimension);
 	}
+
+	@Override
+	public Type clone() 
+	{		
+		return new StringType(dimension);
+	}
 }

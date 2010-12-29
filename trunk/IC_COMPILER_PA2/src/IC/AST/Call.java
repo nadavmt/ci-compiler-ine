@@ -36,5 +36,4 @@ public abstract class Call extends Expression {
 	public List<Expression> getArguments() {
 		return arguments;
 	}
-
 }

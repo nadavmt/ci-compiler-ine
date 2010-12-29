@@ -8,4 +8,10 @@ public class NullType extends Type
 	{
 		super(NAME, 0);
 	}
+
+	@Override
+	public Type clone() 
+	{	
+		return new NullType();
+	}
 }
