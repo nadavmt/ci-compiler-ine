@@ -6,11 +6,16 @@ public class VoidType extends Type
 
 	public VoidType()
 	{
-		this(0);
+		super(NAME,0);
 	}
-	
+	/*
 	public VoidType(int dimension)
 	{
 		super(NAME, dimension);
+	}
+*/
+	@Override
+	public Type clone() {
+		return new VoidType();
 	}
 }

@@ -23,4 +23,9 @@ public class BlockSymbolTable extends SymbolTable
 	{
 		return breakable;
 	}
+
+	@Override
+	public SymbolTableKind getTableKind() {
+		return SymbolTableKind.BLOCK;
+	}
 }

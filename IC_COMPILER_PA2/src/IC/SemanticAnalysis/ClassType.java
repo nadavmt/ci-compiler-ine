@@ -27,4 +27,10 @@ public class ClassType extends Type
 	{
 		return true;
 	}
+
+	@Override
+	public Type clone() 
+	{
+		return new ClassType(classAST);
+	}
 }

@@ -13,4 +13,10 @@ public class BoolType extends Type
 	{
 		super(NAME, dimension);
 	}
+
+	@Override
+	public Type clone() 
+	{
+		return new BoolType(dimension);
+	}
 }

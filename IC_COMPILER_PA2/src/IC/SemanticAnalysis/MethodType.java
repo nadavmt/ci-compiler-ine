@@ -30,4 +30,14 @@ public class MethodType extends Type
 	{
 		return returnType;
 	}
+
+	@Override
+	public Type clone() 
+	{	
+		Type[] paramClones = new Type[paramTypes.length];
+		for (int i=0;i<paramClones.length;i++)
+			paramClones[i] = paramTypes[i].clone();
+		
+		return new MethodType(paramClones,returnType.clone());
+	}
 }

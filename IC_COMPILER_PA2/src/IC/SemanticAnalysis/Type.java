@@ -29,4 +29,11 @@ public abstract class Type
 	{
 		return false;
 	}
+	
+	public abstract Type clone();
+
+	public void setDimension(int i)
+	{
+		this.dimension = i;
+	}
 }
