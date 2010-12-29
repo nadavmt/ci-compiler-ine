@@ -9,6 +9,7 @@ import java_cup.runtime.Symbol;
 
 import IC.AST.*;
 import IC.Parser.*;
+import IC.SemanticAnalysis.TableCreator;
 
 /**
  * Parses a given IC source file and creates its Abstract Syntax Tree:
@@ -37,6 +38,7 @@ public class Compiler
 		String srcPath = null;
 		
 		boolean prettyPrint = false;
+		boolean dumpSymtab = false;
 		
 		try
 		{
@@ -44,6 +46,11 @@ public class Compiler
 				throw new Exception("Illegal number of arguments");
 			
 			prettyPrint = findOptions(myArgs, "-print-ast", true) != null;
+			dumpSymtab = findOptions(myArgs, "-dump-symtab", true) != null;
+			
+			if (prettyPrint && dumpSymtab)
+				throw new Exception("Only one option allowed");
+			
 			libPath = findOptions(myArgs, "-L", false);
 			
 			if (libPath == null)
@@ -106,6 +113,19 @@ public class Compiler
         	{
         		printer = new PrettyPrinter(srcPath);
         		System.out.println(srcRoot.accept(printer));
+        	}
+        	
+        	TableCreator tc = new TableCreator(srcPath);
+    		Object symbolTable = srcRoot.accept(tc);
+    		if (symbolTable == null)
+    		{
+    			// we where not able not create the symbol table
+    			System.exit(-1);
+    		}
+    		
+        	if (dumpSymtab)
+        	{
+        		System.out.println(symbolTable);
         	}
 			
         	srcRoot.getClasses().add(libRoot);

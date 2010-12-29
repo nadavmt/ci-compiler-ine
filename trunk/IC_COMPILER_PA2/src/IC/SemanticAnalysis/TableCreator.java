@@ -251,8 +251,12 @@ public class TableCreator implements Visitor {
 
 	public Object visit(StatementsBlock statementsBlock) {
 		BlockSymbolTable t = new BlockSymbolTable(statementsBlock.getEnclosingScope());
-		if (!addSymbols(t, statementsBlock.getStatements()))
-			return null;
+		
+        for (Statement s: statementsBlock.getStatements()){
+                s.setEnclosingScope(t);
+                if (s.accept(this) == null) return null;
+        }
+        
 		return t;
 	}
 
@@ -332,12 +336,14 @@ public class TableCreator implements Visitor {
 	}
 
 	public Object visit(While whileStatement) {
+		
 		whileStatement.getCondition().setEnclosingScope(
 				whileStatement.getEnclosingScope());
 		whileStatement.getOperation().setEnclosingScope(
 				whileStatement.getEnclosingScope());
 		if (whileStatement.getCondition().accept(this) == null)
 			return null;
+        
 		BlockSymbolTable blockTable = (BlockSymbolTable)whileStatement.getOperation().accept(this);
 		if (blockTable == null)
 			return null;
