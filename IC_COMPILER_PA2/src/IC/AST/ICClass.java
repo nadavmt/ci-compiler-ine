@@ -1,6 +1,11 @@
 package IC.AST;
 
 import java.util.List;
+import java.util.Map;
+
+import IC.SemanticAnalysis.ClassSymbolTable;
+import IC.SemanticAnalysis.ClassTable;
+import IC.SemanticAnalysis.SymbolTable;
 
 /**
  * Class declaration AST node.
@@ -81,4 +86,74 @@ public class ICClass extends ASTNode {
 		return methods;
 	}
 
+	public String toString()
+	{
+		StringBuffer str = new StringBuffer();
+		
+		str.append("\nClass Symbol Table: ");
+		str.append(name + "\n");
+		
+		for (Field f : fields)
+		{
+			str.append("\tField: " + f + "\n");
+		}
+		
+		for (Method m : methods)
+		{
+			if (m.isStatic())
+				str.append("\tStatic method: " + m +"\n");
+		}
+		
+		for (Method m : methods)
+		{
+			if (!m.isStatic())
+				str.append("\tmethod: " + m +"\n");
+		}
+		
+		ClassSymbolTable t = ClassTable.getClassTable(getName());
+		List<ClassSymbolTable> children = ClassTable.getChildren(t);
+		
+		if (methods.size() + children.size() > 0)
+			str.append("Children tables: ");
+		
+		boolean firstAdded = false;
+		if (!methods.isEmpty())
+		{
+			for (Method m : methods)
+			{
+				if (m.isStatic())
+				{
+					if (firstAdded)
+						str.append(", ");
+					else
+						firstAdded = true;
+					str.append(m.getName());
+				}
+			}
+			
+			for (Method m : methods)
+			{
+				if (!m.isStatic())
+				{
+					if (firstAdded)
+						str.append(", ");
+					else
+						firstAdded = true;
+					str.append(m.getName());
+				}
+			}
+		}
+		
+		for (ClassSymbolTable c : children)
+		{
+			if (firstAdded)
+				str.append(", ");
+			else
+				firstAdded = true;
+			str.append(c.getId());
+		}
+		
+		str.append("\n");
+		return str.toString();
+	}
 }

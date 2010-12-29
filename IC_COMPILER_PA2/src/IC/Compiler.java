@@ -115,6 +115,8 @@ public class Compiler
         		System.out.println(srcRoot.accept(printer));
         	}
         	
+        	srcRoot.getClasses().add(libRoot);
+        	
         	TableCreator tc = new TableCreator(srcPath);
     		Object symbolTable = srcRoot.accept(tc);
     		if (symbolTable == null)
@@ -123,12 +125,11 @@ public class Compiler
     			System.exit(-1);
     		}
     		
-        	if (dumpSymtab)
+    		if (dumpSymtab)
         	{
+        		System.out.println();
         		System.out.println(symbolTable);
         	}
-			
-        	srcRoot.getClasses().add(libRoot);
     	}
     	catch (FileNotFoundException e)
     	{

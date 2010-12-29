@@ -56,5 +56,22 @@ public abstract class Method extends ASTNode {
 	}
 	
 	public abstract boolean isStatic();
+	
+	@Override
+	public String toString()
+	{
+		StringBuffer str = new StringBuffer();
+		str.append(name + " {");
+		for (int i = 0; i < formals.size(); i++)
+		{
+			if (i > 0)
+				str.append(", ");
+			str.append(formals.get(i).getType());
+		}
+		str.append(" -> ");
+		str.append(type + "}");
+		
+		return str.toString();
+	}
 
 }
