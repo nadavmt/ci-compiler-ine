@@ -82,7 +82,7 @@ public class TableCreator implements Visitor {
 			
 		} catch (SemanticError e) {
 			e.setLineNumber(method.getLine());
-			System.err.println(e.getMessage());
+			System.err.println(e.getLineNumber()+": "+ e.getMessage());
 			return null;
 		}
 	}
@@ -164,7 +164,7 @@ public class TableCreator implements Visitor {
 		try {
 			prepareAllTables(program.getClasses(), t);
 		} catch (SemanticError e) {
-			System.err.println(e.getMessage());
+			System.err.println(e.getLineNumber()+": "+ e.getMessage());;
 			return null;
 		}
 
@@ -193,7 +193,7 @@ public class TableCreator implements Visitor {
 				throw new SemanticError("main method must be static");
 			} catch (SemanticError e) {
 				e.setLineNumber(method.getLine());
-				System.err.println(e.getMessage());
+				System.err.println(e.getLineNumber()+": "+ e.getMessage());;
 				return null;
 			}
 		}
@@ -221,7 +221,7 @@ public class TableCreator implements Visitor {
 				}
 			} catch (SemanticError e) {
 				e.setLineNumber(method.getLine());
-				System.err.println(e.getMessage());
+				System.err.println(e.getLineNumber()+": "+ e.getMessage());;
 				return null;
 			}
 
@@ -235,7 +235,7 @@ public class TableCreator implements Visitor {
 				throw new SemanticError("Libarary cannot contain main method");
 			} catch (SemanticError e) {
 				e.setLineNumber(method.getLine());
-				System.err.println(e.getMessage());
+				System.err.println(e.getLineNumber()+": "+ e.getMessage());;
 				return null;
 			}
 		}
@@ -376,7 +376,7 @@ public class TableCreator implements Visitor {
 			localVariable.getEnclosingScope().addEntry(s);
 		} catch (SemanticError e) {
 			e.setLineNumber(localVariable.getLine());
-			System.err.println(e.getMessage());
+			System.err.println(e.getLineNumber()+": "+ e.getMessage());;
 			return null;
 		}
 		return s;
@@ -407,7 +407,7 @@ public class TableCreator implements Visitor {
 			catch (SemanticError e)
 			{
 				e.setLineNumber(location.getLine());
-				System.err.println(e.getMessage());
+				System.err.println(e.getLineNumber()+": "+ e.getMessage());;
 				return null;
 			}
 		}

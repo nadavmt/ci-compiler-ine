@@ -80,7 +80,7 @@ public class SemanticChecker implements Visitor {
 			}
 		}
 		catch (SemanticError e) {
-			System.err.println(e.getMessage());
+			System.err.println(e.getMessage()+ " in line "+ e.getLineNumber());
 			return null;
 		}
 
@@ -181,7 +181,7 @@ public class SemanticChecker implements Visitor {
 		}
 		catch (SemanticError e)
 		{
-			System.err.println(e.getMessage());
+			System.err.println(e.getLineNumber()+": "+ e.getMessage());;
 			return null;
 		}
 
@@ -236,7 +236,7 @@ public class SemanticChecker implements Visitor {
 		}
 		catch (SemanticError e)
 		{
-			System.err.println(e.getMessage());
+			System.err.println(e.getLineNumber()+": "+ e.getMessage());;
 			return null;
 		}
 	}
@@ -259,7 +259,7 @@ public class SemanticChecker implements Visitor {
 		}
 		catch (SemanticError e)
 		{
-			System.err.println(e.getMessage());
+			System.err.println(e.getLineNumber()+": "+ e.getMessage());;
 			return null;
 		}
 	}
@@ -281,7 +281,7 @@ public class SemanticChecker implements Visitor {
 		}
 		catch (SemanticError e)
 		{
-			System.err.println(e.getMessage());
+			System.err.println(e.getLineNumber()+": "+ e.getMessage());;
 			return null;
 		}
 	}
@@ -301,7 +301,7 @@ public class SemanticChecker implements Visitor {
 		}
 		catch (SemanticError e)
 		{
-			System.err.println(e.getMessage());
+			System.err.println(e.getLineNumber()+": "+ e.getMessage());;
 			return null;
 		}
 	}
@@ -348,7 +348,7 @@ public class SemanticChecker implements Visitor {
 		}
 		catch (SemanticError e)
 		{
-			System.err.println(e.getMessage());
+			System.err.println(e.getLineNumber()+": "+ e.getMessage());;
 			return null;
 		}
 	}
@@ -390,7 +390,7 @@ public class SemanticChecker implements Visitor {
 		}
 		catch (SemanticError e)
 		{
-			System.err.println(e.getMessage());
+			System.err.println(e.getLineNumber()+": "+ e.getMessage());;
 			return null;
 		}
 	}
@@ -421,7 +421,7 @@ public class SemanticChecker implements Visitor {
 		}
 		catch(SemanticError e)
 		{
-			System.err.println(e.getMessage());
+			System.err.println(e.getLineNumber()+": "+ e.getMessage());;
 			return null;
 		}	
 	}
@@ -445,7 +445,7 @@ public class SemanticChecker implements Visitor {
 		}
 		catch (SemanticError e)
 		{
-			System.err.println(e.getMessage());
+			System.err.println(e.getLineNumber()+": "+ e.getMessage());;
 			return null;
 		}
 	}
@@ -483,7 +483,7 @@ public class SemanticChecker implements Visitor {
 		}
 		catch (SemanticError e)
 		{
-			System.err.println(e.getMessage());
+			System.err.println(e.getLineNumber()+": "+ e.getMessage());;
 			return null;
 		}
 	}
@@ -528,7 +528,7 @@ public class SemanticChecker implements Visitor {
 		}
 		catch (SemanticError e)
 		{
-			System.err.println(e.getMessage());
+			System.err.println(e.getLineNumber()+": "+ e.getMessage());;
 			return null;
 		}		
 	}
@@ -555,7 +555,7 @@ public class SemanticChecker implements Visitor {
 		}
 		catch (SemanticError e)
 		{
-			System.err.println(e.getMessage());
+			System.err.println(e.getLineNumber()+": "+ e.getMessage());;
 			return null;
 		}
 	}
@@ -571,7 +571,7 @@ public class SemanticChecker implements Visitor {
 		}
 		catch (SemanticError e)
 		{
-			System.err.println(e.getMessage());
+			System.err.println(e.getLineNumber()+": "+ e.getMessage());;
 			return null;
 		}		
 	}
@@ -596,7 +596,7 @@ public class SemanticChecker implements Visitor {
 		}
 		catch (SemanticError e)
 		{
-			System.err.println(e.getMessage());
+			System.err.println(e.getLineNumber()+": "+ e.getMessage());;
 			return null;
 		}			
 	}
@@ -615,7 +615,7 @@ public class SemanticChecker implements Visitor {
 		}
 		catch (SemanticError e)
 		{
-			System.err.println(e.getMessage());
+			System.err.println(e.getLineNumber()+": "+ e.getMessage());;
 			return null;
 		}			
 	}
@@ -641,7 +641,7 @@ public class SemanticChecker implements Visitor {
 		}
 		catch (SemanticError e)
 		{
-			System.err.println(e.getMessage());
+			System.err.println(e.getLineNumber()+": "+ e.getMessage());;
 			return null;
 		}				
 	}
@@ -685,7 +685,7 @@ public class SemanticChecker implements Visitor {
 		}
 		catch (SemanticError e)
 		{
-			System.err.println(e.getMessage());
+			System.err.println(e.getLineNumber()+": "+ e.getMessage());;
 			return null;
 		}				
 		
@@ -705,7 +705,7 @@ public class SemanticChecker implements Visitor {
 		}
 		catch (SemanticError e)
 		{
-			System.err.println(e.getMessage());
+			System.err.println(e.getLineNumber()+": "+ e.getMessage());;
 			return null;
 		}				
 	}
@@ -724,7 +724,7 @@ public class SemanticChecker implements Visitor {
 		}
 		catch (SemanticError e)
 		{
-			System.err.println(e.getMessage());
+			System.err.println(e.getLineNumber()+": "+ e.getMessage());;
 			return null;
 		}
 	}
