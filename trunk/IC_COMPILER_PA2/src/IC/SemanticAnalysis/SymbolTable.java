@@ -15,7 +15,7 @@ public abstract class SymbolTable {
 	  public SymbolTable(String id, SymbolTable parent) {
 	    this.id = id;
 	    entries = new HashMap<String,Symbol>();
-	    parent = parentSymbolTable;
+	    parentSymbolTable = parent;
 	  }
 	  
 	  public void addEntry(Symbol sym) throws SemanticError
