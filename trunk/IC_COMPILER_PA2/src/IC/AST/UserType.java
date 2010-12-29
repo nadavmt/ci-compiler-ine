@@ -35,4 +35,10 @@ public class UserType extends Type {
 	{
 		return true;
 	}
+	
+	@Override
+	public String toString()
+	{
+		return name;
+	}
 }

@@ -28,4 +28,12 @@ public class BlockSymbolTable extends SymbolTable
 	public SymbolTableKind getTableKind() {
 		return SymbolTableKind.BLOCK;
 	}
+	
+	public String toString(String path){
+        String str = "Statement Block Symbol Table ( located in "+path+" )";
+        
+        
+        return str;
+}
+
 }

@@ -27,5 +27,10 @@ public class ClassSymbolTable extends SymbolTable {
 	public SymbolTableKind getTableKind() {
 		return SymbolTableKind.CLASS;
 	}
+	
+	public void setParentTable(SymbolTable parent)
+	{
+		this.parentSymbolTable = parent;
+	}
 
 }

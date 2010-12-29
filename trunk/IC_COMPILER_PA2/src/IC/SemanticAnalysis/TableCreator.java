@@ -3,46 +3,7 @@ package IC.SemanticAnalysis;
 import java.util.Collection;
 import java.util.List;
 
-import IC.AST.ASTNode;
-import IC.AST.ArrayLocation;
-import IC.AST.Assignment;
-import IC.AST.BinaryOp;
-import IC.AST.Break;
-import IC.AST.Call;
-import IC.AST.CallStatement;
-import IC.AST.Continue;
-import IC.AST.Expression;
-import IC.AST.ExpressionBlock;
-import IC.AST.Field;
-import IC.AST.FieldOrMethod;
-import IC.AST.Formal;
-import IC.AST.ICClass;
-import IC.AST.If;
-import IC.AST.Length;
-import IC.AST.LibraryMethod;
-import IC.AST.Literal;
-import IC.AST.LocalVariable;
-import IC.AST.LogicalBinaryOp;
-import IC.AST.LogicalUnaryOp;
-import IC.AST.MathBinaryOp;
-import IC.AST.MathUnaryOp;
-import IC.AST.Method;
-import IC.AST.NewArray;
-import IC.AST.NewClass;
-import IC.AST.PrimitiveType;
-import IC.AST.Program;
-import IC.AST.Return;
-import IC.AST.Statement;
-import IC.AST.StatementsBlock;
-import IC.AST.StaticCall;
-import IC.AST.StaticMethod;
-import IC.AST.This;
-import IC.AST.UserType;
-import IC.AST.VariableLocation;
-import IC.AST.VirtualCall;
-import IC.AST.VirtualMethod;
-import IC.AST.Visitor;
-import IC.AST.While;
+import IC.AST.*;
 import IC.Parser.SemanticError;
 
 public class TableCreator implements Visitor {
@@ -152,6 +113,7 @@ public class TableCreator implements Visitor {
 							"Cannot find superclass " + c.getSuperClassName());
 
 				c.setEnclosingScope(enclosingTable);
+				ClassTable.getClassTable(c.getName()).setParentTable(enclosingTable);
 			}
 		}
 

@@ -37,4 +37,9 @@ public class Field extends ASTNode {
 		return name;
 	}
 
+	@Override
+	public String toString()
+	{
+		return name + " " + type;
+	}
 }

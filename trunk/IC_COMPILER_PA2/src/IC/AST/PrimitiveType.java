@@ -35,4 +35,10 @@ public class PrimitiveType extends Type {
 	public DataTypes getType(){
 		return type;
 	}
+	
+	@Override
+	public String toString()
+	{
+		return type.toString().toLowerCase();
+	}
 }
