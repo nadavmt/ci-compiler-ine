@@ -245,7 +245,7 @@ public class TableCreator implements Visitor {
 			case BOOLEAN:	return new BoolType(type.getDimension());
 			case INT:		return new IntType(type.getDimension()); 
 			case STRING:	return new StringType(type.getDimension());
-			case VOID:		return new StringType(type.getDimension());
+			case VOID:      return new VoidType();
 		}
 		
 		return null;

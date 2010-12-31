@@ -39,6 +39,10 @@ public class PrimitiveType extends Type {
 	@Override
 	public String toString()
 	{
-		return type.toString().toLowerCase();
+		String result = type.toString().toLowerCase();
+		for (int i = 0; i < this.getDimension(); i++)
+			result += "[]";
+		
+		return result; 
 	}
 }
