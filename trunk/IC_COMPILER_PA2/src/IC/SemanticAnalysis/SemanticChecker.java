@@ -191,7 +191,7 @@ public class SemanticChecker implements Visitor {
 				if (expC.getName().equals(locC.getName()))
 					return true;
 				expC = ClassTable.getClassAST(expC.getSuperClassName());
-			}while (expC.hasSuperClass());
+			}while (expC != null);
 			//if we didn't find it in the hierarchy
 			return false;
 		}
