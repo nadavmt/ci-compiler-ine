@@ -66,7 +66,8 @@ public abstract class Method extends ASTNode {
 		{
 			if (i > 0)
 				str.append(", ");
-			str.append(formals.get(i).getType());
+			Type t = formals.get(i).getType();
+			str.append(t.toString());
 		}
 		str.append(" -> ");
 		str.append(type + "}");

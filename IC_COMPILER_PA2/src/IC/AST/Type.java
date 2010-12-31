@@ -48,4 +48,13 @@ public abstract class Type extends ASTNode {
 	public boolean isUserType() {
 		return false;
 	}
+	
+	public String toString()
+	{
+		String result = getName();
+		for (int i = 0; i < dimension; i++)
+			result += "[]";
+		
+		return result;
+	}
 }

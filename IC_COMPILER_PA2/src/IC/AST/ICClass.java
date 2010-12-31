@@ -1,11 +1,8 @@
 package IC.AST;
 
 import java.util.List;
-import java.util.Map;
-
 import IC.SemanticAnalysis.ClassSymbolTable;
 import IC.SemanticAnalysis.ClassTable;
-import IC.SemanticAnalysis.MethodSymbolTable;
 import IC.SemanticAnalysis.SymbolTable;
 
 /**

@@ -39,6 +39,10 @@ public class UserType extends Type {
 	@Override
 	public String toString()
 	{
-		return name;
+		String result = name;
+		for (int i = 0; i < this.getDimension(); i++)
+			result += "[]";
+		
+		return result; 
 	}
 }
