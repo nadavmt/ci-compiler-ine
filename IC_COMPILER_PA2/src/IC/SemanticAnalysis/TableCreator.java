@@ -25,6 +25,11 @@ public class TableCreator implements Visitor {
 			
 			if (!addSymbols(t, method.getFormals()))
 				return null;
+			
+			for (Formal f : method.getFormals())
+			{
+				t.getSymbol(f.getName()).setIsFormal(true);
+			}
 
 			for (Statement statement : method.getStatements()) {
 				statement.setEnclosingScope(t);
