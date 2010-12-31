@@ -136,6 +136,12 @@ public class TableCreator implements Visitor {
 		if (!addSymbols(t, program.getClasses()))
 			return null;
 
+		if (!mainMethodEncountered)
+		{
+			System.err.println("Error: no main method declared.");
+			return null;
+		}
+		
 		return t;
 	}
 
@@ -447,7 +453,7 @@ public class TableCreator implements Visitor {
 		if (handleSingleExpression(binaryOp.getFirstOperand(), binaryOp
 				.getEnclosingScope()) == null)
 			return null;
-		return (handleSingleExpression(binaryOp.getFirstOperand(), binaryOp
+		return (handleSingleExpression(binaryOp.getSecondOperand(), binaryOp
 				.getEnclosingScope()));
 	}
 

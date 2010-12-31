@@ -2,8 +2,6 @@ package IC.SemanticAnalysis;
 
 import java.util.HashMap;
 
-
-
 public class ClassSymbolTable extends SymbolTable {
 
 	private HashMap<String, Boolean> isStatic;
