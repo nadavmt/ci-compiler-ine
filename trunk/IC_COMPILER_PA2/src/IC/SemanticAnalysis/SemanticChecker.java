@@ -474,7 +474,7 @@ public class SemanticChecker implements Visitor {
 				if (param == null)
 					return null;
 				if (!checkHierarchy(mt.getParamTypes()[i], param))
-					throw new SemanticError(call.getLine(),"the "+ i + " parameter does not match expected type");
+					throw new SemanticError(call.getLine(),"the " + (i+1) + " parameter does not match expected type");
 			}
 			return Boolean.TRUE;
 		}
