@@ -1,50 +1,19 @@
 package IC.SemanticAnalysis;
 
+
+import java.util.List;
+
 import IC.BinaryOps;
 import IC.LiteralTypes;
-import IC.AST.ArrayLocation;
-import IC.AST.Assignment;
-import IC.AST.Break;
-import IC.AST.Call;
-import IC.AST.CallStatement;
-import IC.AST.Continue;
-import IC.AST.ExpressionBlock;
-import IC.AST.Field;
-import IC.AST.FieldOrMethod;
-import IC.AST.Formal;
-import IC.AST.ICClass;
-import IC.AST.If;
-import IC.AST.Length;
-import IC.AST.LibraryMethod;
-import IC.AST.Literal;
-import IC.AST.LocalVariable;
-import IC.AST.LogicalBinaryOp;
-import IC.AST.LogicalUnaryOp;
-import IC.AST.MathBinaryOp;
-import IC.AST.MathUnaryOp;
-import IC.AST.Method;
-import IC.AST.NewArray;
-import IC.AST.NewClass;
-import IC.AST.PrimitiveType;
-import IC.AST.Program;
-import IC.AST.Return;
-import IC.AST.Statement;
-import IC.AST.StatementsBlock;
-import IC.AST.StaticCall;
-import IC.AST.StaticMethod;
-import IC.AST.This;
-import IC.AST.UserType;
-import IC.AST.VariableLocation;
-import IC.AST.VirtualCall;
-import IC.AST.VirtualMethod;
-import IC.AST.Visitor;
-import IC.AST.While;
+import IC.AST.*;
 import IC.Parser.SemanticError;
 
 public class SemanticChecker implements Visitor {
 
 	@Override
 	public Object visit(Program program) {
+		
+		
 		for (ICClass c : program.getClasses()) {
 			if (c.accept(this) == null) {
 				return null;
@@ -108,8 +77,59 @@ public class SemanticChecker implements Visitor {
 				return null;
 		}
 		
+		if (!checkReturn(method))
+		{
+			System.err.println("method " + method.getName() + " doesn't have a return statement in all code path");
+			return null;
+		}
+		
 		return Boolean.TRUE; 
 	}
+	
+	private boolean checkReturn(Method method)
+	{
+		if (method.getType().getName().equals(VoidType.NAME))
+			return true;
+		if (method.getEnclosingScope().getId().equals("Library"))
+			return true;
+		return checkReturnStatements(method.getStatements());
+	}
+	
+	private boolean checkReturnStatements(List<Statement> statements)
+	{
+		for (Statement s : statements) {
+			if (checkReturnStatement(s))
+				return true;
+		}
+
+		return false;
+	}
+	
+	private boolean checkReturnStatement(Statement s)
+	{
+		if (s instanceof Return)
+			return true;
+		
+		if (s instanceof If)
+		{
+			If real = (If)s;
+			if (!real.hasElse())
+				return false;
+			if (checkReturnStatement(real.getOperation()) &&
+				checkReturnStatement(real.getElseOperation()))
+				return true;
+			return false;
+		}
+		else if (s instanceof StatementsBlock)
+		{
+			StatementsBlock real = (StatementsBlock)s;
+			return checkReturnStatements(real.getStatements());
+		}
+		
+		return false;
+	}
+	
+	
 	
 	@Override
 	public Object visit(VirtualMethod method) {
@@ -181,7 +201,13 @@ public class SemanticChecker implements Visitor {
 	@Override
 	public Object visit(Assignment assignment) {
 		Type locType = (Type)assignment.getVariable().accept(this);
+		if (locType == null)
+			return null;
+		
 		Type expType = (Type)assignment.getAssignment().accept(this);
+		if (expType == null)
+			return null;
+		
 		try
 		{
 			if (!checkHierarchy(locType, expType))
@@ -394,7 +420,7 @@ public class SemanticChecker implements Visitor {
 				}
 				t = t.getParent();		
 			}
-			throw new SemanticError(location.getLine(),"cannot find "+ location.getName() + (externalType==null? "": (" in " + externalType.getName())));
+			throw new SemanticError(location.getLine(), "Undefined Symbol "+ location.getName() + (externalType==null? "": (" in " + externalType.getName())));
 			
 		}
 		catch (SemanticError e)
@@ -643,7 +669,7 @@ public class SemanticChecker implements Visitor {
 			
 			if (!firstType.getName().equals(secondType.getName()))
 				throw new SemanticError(binaryOp.getLine(),"operands must be of the same type");
-			if ((!firstType.getName().equals(IntType.NAME)) || (!firstType.getName().equals(StringType.NAME)))
+			if ((!firstType.getName().equals(IntType.NAME)) && (!firstType.getName().equals(StringType.NAME)))
 				throw new SemanticError(binaryOp.getLine(),"cannot apply binary opps on " + firstType.getName());
 			if ((firstType.getName().equals(StringType.NAME))&& (binaryOp.getOperator()!=BinaryOps.PLUS))
 				throw new SemanticError(binaryOp.getLine(),"the only binary operations defined for Strings is PLUS");
