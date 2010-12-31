@@ -1,0 +1,12 @@
+class A {
+  string str;
+  int i;
+
+  void vfunc(A a, int max, int val) {
+    
+    if (i < max){
+        
+    }
+  }
+}
+

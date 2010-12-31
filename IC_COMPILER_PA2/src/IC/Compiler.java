@@ -9,6 +9,7 @@ import java_cup.runtime.Symbol;
 
 import IC.AST.*;
 import IC.Parser.*;
+import IC.SemanticAnalysis.SemanticChecker;
 import IC.SemanticAnalysis.TableCreator;
 
 /**
@@ -52,10 +53,7 @@ public class Compiler
 				throw new Exception("Only one option allowed");
 			
 			libPath = findOptions(myArgs, "-L", false);
-			
-			if (libPath == null)
-				libPath = "libic.sig";
-			
+						
 			if (myArgs.size() != 1)
 				throw new Exception("Illegal number of arguments");
 			
@@ -68,7 +66,7 @@ public class Compiler
 		}
     	
     	File srcFile = new File(srcPath);
-    	File libFile = new File(libPath);
+    	
     	
     	FileInputStream fis = null;
     	FileInputStream lis = null;
@@ -81,22 +79,25 @@ public class Compiler
     	
     	try
     	{
-    		currentFile = libPath;
-    		lis = new FileInputStream(libFile);
-    		Lexer libLexer = new Lexer(lis);
-    		LibParser libParser = new LibParser(libLexer);
-    		libParseSymbol = libParser.parse();
-			ICClass libRoot = (ICClass)libParseSymbol.value;
-    		lis.close();
-    		lis = null;
-			
-			System.out.println("Parsed " + currentFile + " successfully!");
-    		
-    		if (prettyPrint)
-        	{
-        		printer = new PrettyPrinter(libPath);
-        		System.out.println(libRoot.accept(printer) + "\n");
-        	}
+    		ICClass libRoot = null;
+			if (libPath != null) {
+				File libFile = new File(libPath);
+				currentFile = libPath;
+				lis = new FileInputStream(libFile);
+				Lexer libLexer = new Lexer(lis);
+				LibParser libParser = new LibParser(libLexer);
+				libParseSymbol = libParser.parse();
+				libRoot = (ICClass) libParseSymbol.value;
+				lis.close();
+				lis = null;
+
+				System.out.println("Parsed " + currentFile + " successfully!");
+
+				if (prettyPrint) {
+					printer = new PrettyPrinter(libPath);
+					System.out.println(libRoot.accept(printer) + "\n");
+				}
+			}
     		
     		currentFile = srcPath;
     		fis = new FileInputStream(srcFile);
@@ -115,15 +116,20 @@ public class Compiler
         		System.out.println(srcRoot.accept(printer));
         	}
         	
-        	srcRoot.getClasses().add(libRoot);
+        	if (libPath != null)
+        		srcRoot.getClasses().add(libRoot);
         	
         	TableCreator tc = new TableCreator(srcPath);
     		Object symbolTable = srcRoot.accept(tc);
     		if (symbolTable == null)
     		{
     			// we where not able not create the symbol table
-    			System.exit(-1);
+    			return;
     		}
+    		
+    		SemanticChecker checker = new SemanticChecker();
+    		if (srcRoot.accept(checker) == null)
+    			return;
     		
     		if (dumpSymtab)
         	{

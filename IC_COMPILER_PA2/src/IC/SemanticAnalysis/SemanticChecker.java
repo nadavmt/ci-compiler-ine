@@ -78,6 +78,15 @@ public class SemanticChecker implements Visitor {
 				if (!isUniqueClassMember(icClass, m.getName()))
 					throw new SemanticError(m.getLine(), "Class member " + m.getName() + " already exists.");
 			}
+			
+			for (Field f : icClass.getFields()) {
+				if (f.accept(this) == null)
+					return null;
+			}			
+			for (Method m : icClass.getMethods()) {
+				if (m.accept(this) == null)
+					return null;
+			}
 		}
 		catch (SemanticError e) {
 			System.err.println(e.getMessage()+ " in line "+ e.getLineNumber());
@@ -151,7 +160,7 @@ public class SemanticChecker implements Visitor {
 			return false;
 		else if ((firstLoc.getDimension()>0)|| (secondLoc.getDimension()>0))//at least one of them is array type
 		{
-			return (firstLoc.equals(secondLoc));			
+			return (firstLoc.getName().equals(secondLoc.getName()));			
 		}
 		else if (firstLoc.isUserType())//checks class hierarchy 
 		{
@@ -507,6 +516,7 @@ public class SemanticChecker implements Visitor {
 			{
 				t = call.getEnclosingScope();
 			}
+		
 			while (t.getParent()!=null)
 			{
 				if (t.symbolExists(call.getName()))
