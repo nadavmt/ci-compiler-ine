@@ -18,8 +18,11 @@ public class TableCreator implements Visitor {
 	private Object visitMethod(Method method) {
 		try
 		{
-			SymbolTable t = new MethodSymbolTable(method.getName(), method.getEnclosingScope());
+			MethodSymbolTable t = new MethodSymbolTable(method.getName(), method.getEnclosingScope());
 
+			ClassSymbolTable parent = (ClassSymbolTable)method.getEnclosingScope();
+			parent.getChildrenTable().add(t);
+			
 			if (!addSymbols(t, method.getFormals()))
 				return null;
 
@@ -213,7 +216,7 @@ public class TableCreator implements Visitor {
 
 	public Object visit(StatementsBlock statementsBlock) {
 		BlockSymbolTable t = new BlockSymbolTable(statementsBlock.getEnclosingScope());
-		
+		statementsBlock.getEnclosingScope().getChildrenTable().add(t);
         for (Statement s: statementsBlock.getStatements()){
                 s.setEnclosingScope(t);
                 if (s.accept(this) == null) return null;

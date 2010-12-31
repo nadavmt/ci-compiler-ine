@@ -1,6 +1,8 @@
 package IC.SemanticAnalysis;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import IC.Parser.SemanticError;
@@ -10,7 +12,7 @@ public abstract class SymbolTable {
 	  protected Map<String,Symbol> entries;
 	  protected String id;
 	  protected SymbolTable parentSymbolTable;
-	  
+	  protected List<SymbolTable> childrenTable = new ArrayList<SymbolTable>();
 	  
 	  public SymbolTable(String id, SymbolTable parent) {
 	    this.id = id;
@@ -24,6 +26,11 @@ public abstract class SymbolTable {
 	    	  throw new SemanticError("Identifier " + sym.getId() + " already exists");
 	      
 	      entries.put(sym.getId(), sym);
+	  }
+	  
+	  public List<SymbolTable> getChildrenTable()
+	  {
+		  return childrenTable;
 	  }
 	  
 	  public SymbolTable getParent()
