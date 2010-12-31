@@ -5,13 +5,23 @@ public class Symbol {
 	private Kind kind;
 	private Type type;
 	  
-	  
+	private boolean isFormal = false;
+	
 	public Symbol(String id, Kind kind, Type type) {
 		this.id = id;
 		this.kind = kind;
 		this.type = type;
 	}
 	
+	public void setIsFormal(boolean b)
+	{
+		isFormal = b;
+	}
+	
+	public boolean getIsFormal()
+	{
+		return isFormal;
+	}
 	public String getId() {
 		return id;
 	}

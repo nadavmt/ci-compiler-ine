@@ -2,6 +2,8 @@ package IC.SemanticAnalysis;
 
 import java.util.List;
 
+import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
+
 
 public class MethodSymbolTable extends SymbolTable {
 	
@@ -25,11 +27,26 @@ public class MethodSymbolTable extends SymbolTable {
 		
 		for (Symbol s : entries.values())
 		{
-			str.append("\tParameter: ");
-			str.append(s.getType().getName());
-			str.append(" ");
-			str.append(s.getId());
-			str.append("\n");
+			if (s.getIsFormal())
+			{
+				str.append("\tParameter: ");
+				str.append(s.getType().getName());
+				str.append(" ");
+				str.append(s.getId());
+				str.append("\n");
+			}
+		}
+		
+		for (Symbol s : entries.values())
+		{
+			if (!s.getIsFormal())
+			{
+				str.append("\tLocal variable: ");
+				str.append(s.getType().getName());
+				str.append(" ");
+				str.append(s.getId());
+				str.append("\n");
+			}
 		}
 		
 		String location = "statement block in " + getId();
