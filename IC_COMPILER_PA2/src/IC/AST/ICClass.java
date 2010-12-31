@@ -5,6 +5,7 @@ import java.util.Map;
 
 import IC.SemanticAnalysis.ClassSymbolTable;
 import IC.SemanticAnalysis.ClassTable;
+import IC.SemanticAnalysis.MethodSymbolTable;
 import IC.SemanticAnalysis.SymbolTable;
 
 /**
@@ -90,7 +91,7 @@ public class ICClass extends ASTNode {
 	{
 		StringBuffer str = new StringBuffer();
 		
-		str.append("\nClass Symbol Table: ");
+		str.append("Class Symbol Table: ");
 		str.append(name + "\n");
 		
 		for (Field f : fields)
@@ -153,7 +154,15 @@ public class ICClass extends ASTNode {
 			str.append(c.getId());
 		}
 		
-		str.append("\n");
+		if (methods.size() + children.size() > 0)
+			str.append("\n\n");
+		
+		for (SymbolTable methodTable : t.getChildrenTable())
+		{
+			str.append(methodTable + "\n");
+		}
+		
+		//str.append("\n");
 		return str.toString();
 	}
 }

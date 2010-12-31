@@ -1,5 +1,6 @@
 package IC.SemanticAnalysis;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -7,7 +8,7 @@ import IC.AST.ICClass;
 
 public class GlobalSymbolTable extends SymbolTable {
 
-	public GlobalSymbolTable(String id) {
+    public GlobalSymbolTable(String id) {
 		super(id, null);
 	}
 
@@ -15,8 +16,8 @@ public class GlobalSymbolTable extends SymbolTable {
 	public SymbolTableKind getTableKind() {
 		return SymbolTableKind.GLOBAL;
 	}
-
-	@Override
+	
+		@Override
 	public String toString() {
 		StringBuffer str = new StringBuffer("Global Symbol Table: "
 				+ this.getId());
@@ -37,6 +38,7 @@ public class GlobalSymbolTable extends SymbolTable {
 					str.append(", ");
 				str.append(children.get(i).getId());
 			}
+			str.append("\n");
 		}
 
 		str.append("\n");
