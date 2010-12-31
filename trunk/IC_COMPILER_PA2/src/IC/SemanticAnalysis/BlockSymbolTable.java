@@ -46,7 +46,6 @@ public class BlockSymbolTable extends SymbolTable {
 			for (int i = 0; i < subs.size(); i++) {
 				if (i > 0)
 					str.append(", ");
-				BlockSymbolTable bst = (BlockSymbolTable) subs.get(i);
 				str.append("statement block in " + location);
 			}
 		}
