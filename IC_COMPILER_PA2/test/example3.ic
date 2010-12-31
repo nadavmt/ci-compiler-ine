@@ -2,11 +2,72 @@ class A {
   string str;
   int i;
 
+  static int sfunc(boolean b) {
+    if (b) {
+      {
+        int k = 5;
+      }
+      return 1;
+    }
+    else {
+      A x = new A();
+      x.i = 9;
+      x.str = "hello";
+      return 0;
+    }
+  }
+  
+  static int test1(int x)
+  {
+	if (x < 3)
+	{
+		if (x < 2)
+		{
+			x = 10;
+			{
+				x = 100;
+				if (x > 100)
+				{
+					return x;
+				}
+				else
+				{
+					return 0;
+				}
+			}
+		}
+		
+		return 0;
+	}
+	else
+	{
+		x = 1000;
+		return x;
+	}
+  }
+
   void vfunc(A a, int max, int val) {
-    
-    if (i < max){
-        
+    int[] arr = new int[max];
+    int i = 0;
+    while (i < max){
+        arr[i] = val;
+        i = i + 1;
+        Library.printi(i);
+        if (a == null)
+          break;
     }
   }
 }
 
+class B extends A {
+    int j;
+
+    void vfunc(A a, int max, int val) {
+    }
+}
+
+class C {
+  static void main(string[] args) {
+    A[][] a;
+  }
+}
