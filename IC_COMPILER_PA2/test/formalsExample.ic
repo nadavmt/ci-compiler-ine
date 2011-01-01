@@ -1,0 +1,22 @@
+class B{}
+
+class A {
+static void main(string[] args0) 
+{
+	int[][] a = new int[][5];
+	string b;
+	boolean c;
+	int y;
+	B u; 
+	func(a,b,c,u);
+	
+	 
+}
+
+void func(int[][] a, string b, boolean c, B u) 
+{
+   return ;
+       
+   
+ }
+}
