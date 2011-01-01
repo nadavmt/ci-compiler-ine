@@ -1,0 +1,25 @@
+class A
+{
+	static void main (string[] a)
+	{
+	foo();
+	}
+	
+	int foo()
+	{
+	int x= 5;
+	if (x<6)
+		return 1;
+	else
+		return 2;
+	
+	}
+}
+	
+class B
+{
+	static void bar()
+	{
+	int x = A.foo();
+	}
+}

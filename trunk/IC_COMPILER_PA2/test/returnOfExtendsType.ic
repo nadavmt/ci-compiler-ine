@@ -1,0 +1,15 @@
+class B {}
+
+class A extends B
+{
+	static void main (string[] a)
+	{
+	foo();
+	}
+
+	static B foo()
+	{
+	A ret = new A();
+	return ret;
+	}
+}
