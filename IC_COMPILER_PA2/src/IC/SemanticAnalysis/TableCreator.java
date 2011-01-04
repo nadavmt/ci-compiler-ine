@@ -10,6 +10,7 @@ public class TableCreator implements Visitor {
 
 	private String file;
 	private boolean mainMethodEncountered = false;
+	private int operationCounter = 0;
 
 	public TableCreator(String file) {
 		this.file = file;
@@ -262,6 +263,7 @@ public class TableCreator implements Visitor {
 	}
 
 	public Object visit(Assignment assignment) {
+		operationCounter++;
 		assignment.getVariable().setEnclosingScope(assignment.getEnclosingScope());
 		assignment.getAssignment().setEnclosingScope(assignment.getEnclosingScope());
 		if (assignment.getVariable().accept(this) == null)
@@ -272,6 +274,7 @@ public class TableCreator implements Visitor {
 	}
 
 	public Object visit(CallStatement callStatement) {
+		operationCounter++;
 		callStatement.getCall().setEnclosingScope(
 				callStatement.getEnclosingScope());
 		if (callStatement.getCall().accept(this) == null)
@@ -280,6 +283,7 @@ public class TableCreator implements Visitor {
 	}
 
 	public Object visit(Return returnStatement) {
+		operationCounter++;
 		if (returnStatement.hasValue()) {
 			returnStatement.getValue().setEnclosingScope(
 					returnStatement.getEnclosingScope());
@@ -291,6 +295,7 @@ public class TableCreator implements Visitor {
 	}
 
 	public Object visit(If ifStatement) {
+		operationCounter++;
 		ifStatement.getCondition().setEnclosingScope(
 				ifStatement.getEnclosingScope());
 		ifStatement.getOperation().setEnclosingScope(
@@ -312,7 +317,7 @@ public class TableCreator implements Visitor {
 	}
 
 	public Object visit(While whileStatement) {
-		
+		operationCounter++;
 		whileStatement.getCondition().setEnclosingScope(
 				whileStatement.getEnclosingScope());
 		whileStatement.getOperation().setEnclosingScope(
@@ -337,6 +342,7 @@ public class TableCreator implements Visitor {
 	}
 
 	public Object visit(LocalVariable localVariable) {
+		operationCounter++;
 		if (localVariable.hasInitValue()) {
 			localVariable.getInitValue().setEnclosingScope(localVariable.getEnclosingScope());
 			if (localVariable.getInitValue().accept(this) == null)
@@ -348,6 +354,8 @@ public class TableCreator implements Visitor {
 		if (t == null)
 			return null;
 		Symbol s = new Symbol(localVariable.getName(), Kind.Field, t);
+		s.setOpCount(operationCounter);
+		
 		try {
 			localVariable.getEnclosingScope().addEntry(s);
 		} catch (SemanticError e) {
@@ -358,7 +366,6 @@ public class TableCreator implements Visitor {
 		return s;
 	}
 
-	/* itai 24.12 */
 	public Object visit(VariableLocation location)
 	{
 		if (location.isExternal()) // checks that the location isn't null
@@ -378,7 +385,7 @@ public class TableCreator implements Visitor {
 						return Boolean.TRUE;
 					st = st.getParent();
 				}
-				throw new SemanticError(location.getLine(), "Unknow identifier: " + location.getName());
+				throw new SemanticError(location.getLine(), "Unknown identifier: " + location.getName());
 			}
 			catch (SemanticError e)
 			{
@@ -391,6 +398,7 @@ public class TableCreator implements Visitor {
 	}
 
 	public Object visit(ArrayLocation location) {
+		operationCounter++;
 		location.getArray().setEnclosingScope(location.getEnclosingScope());
 		location.getIndex().setEnclosingScope(location.getEnclosingScope());
 		if ((location.getIndex().accept(this) == null)

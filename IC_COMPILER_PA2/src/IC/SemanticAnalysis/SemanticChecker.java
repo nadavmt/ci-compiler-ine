@@ -10,6 +10,8 @@ import IC.Parser.SemanticError;
 
 public class SemanticChecker implements Visitor {
 
+	private int operationCounter = 0;
+	
 	@Override
 	public Object visit(Program program) {
 		
@@ -171,8 +173,9 @@ public class SemanticChecker implements Visitor {
 		return ClassTable.fromUserType(type);
 	}
 
-	private boolean checkHierarchy(Type firstLoc, Type secondLoc)
+	protected static boolean checkHierarchy(Type firstLoc, Type secondLoc)
 	{ 
+		
 		if (((firstLoc.isUserType()) || (firstLoc.getDimension() > 0) || (firstLoc.getName().equals(StringType.NAME))) &&
 				(secondLoc.getName().equals(NullType.NAME)))
 			return true;
@@ -200,6 +203,7 @@ public class SemanticChecker implements Visitor {
 	
 	@Override
 	public Object visit(Assignment assignment) {
+		operationCounter++;
 		Type locType = (Type)assignment.getVariable().accept(this);
 		if (locType == null)
 			return null;
@@ -225,6 +229,7 @@ public class SemanticChecker implements Visitor {
 	@Override
 	public Object visit(CallStatement callStatement)
 	{
+		operationCounter++;
 		if (callStatement.getCall().accept(this)==null) 
 			return null;
 		return Boolean.TRUE;
@@ -245,6 +250,7 @@ public class SemanticChecker implements Visitor {
 	
 	@Override
 	public Object visit(Return returnStatement) { 
+		operationCounter++;
 		Type methodType = getMethodReturnType(returnStatement.getEnclosingScope());
 		try
 		{		
@@ -279,6 +285,7 @@ public class SemanticChecker implements Visitor {
 	@Override
 	public Object visit(If ifStatement)
 	{
+		operationCounter++;
 		try
 		{
 			Type expType = (Type)ifStatement.getCondition().accept(this);
@@ -302,6 +309,7 @@ public class SemanticChecker implements Visitor {
 	@Override
 	public Object visit(While whileStatement)
 	{
+		operationCounter++;
 		try
 		{
 			Type expType = (Type)whileStatement.getCondition().accept(this);
@@ -367,6 +375,7 @@ public class SemanticChecker implements Visitor {
 	@Override
 	public Object visit(LocalVariable localVariable)
 	{
+		operationCounter++;
 		try
 		{
 			if (!localVariable.hasInitValue())
@@ -415,8 +424,9 @@ public class SemanticChecker implements Visitor {
 			while (t!=null)
 			{
 				if (t.symbolExists(location.getName()))
-				{				
-					return t.getSymbol(location.getName()).getType();
+				{			
+					if (t.getSymbol(location.getName()).GetOpCount() <= operationCounter)
+						return t.getSymbol(location.getName()).getType();
 				}
 				t = t.getParent();		
 			}
@@ -433,6 +443,7 @@ public class SemanticChecker implements Visitor {
 	@Override
 	public Object visit(ArrayLocation location) 
 	{
+		operationCounter++;
 		try
 		{
 			Type arrType = (Type) location.getArray().accept(this);
