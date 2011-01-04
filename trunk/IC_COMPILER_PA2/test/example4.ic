@@ -1,0 +1,14 @@
+class A {
+	string a;
+  void sfunc() {
+		
+		a = "asdasd";
+		int a = 3;
+		
+  }
+  
+  static void main(string[] args)
+  {
+  }
+  
+}
