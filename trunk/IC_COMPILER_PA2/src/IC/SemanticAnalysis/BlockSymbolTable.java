@@ -36,6 +36,8 @@ public class BlockSymbolTable extends SymbolTable {
 			str.append("\n\tLocal variable: ");
 			str.append(s.getType().getName() + " " + s.getId());
 		}
+		
+		str.append("\n\n");
 
 		location = "statement block in " + location;
 		List<SymbolTable> subs = getChildrenTable();

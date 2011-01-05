@@ -2,8 +2,6 @@ package IC.SemanticAnalysis;
 
 import java.util.List;
 
-import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
-
 
 public class MethodSymbolTable extends SymbolTable {
 	
