@@ -47,5 +47,10 @@ public class Symbol {
 	{
 		return opCount;
 	}
+
+
+	public void setId(String newID) {
+		id = newID;
+	}
 }
 

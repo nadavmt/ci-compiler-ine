@@ -1,6 +1,7 @@
-package LIR;
+package IC.LIR;
 
 import IC.AST.*;
+import IC.SemanticAnalysis.ClassTable;
 import IC.SemanticAnalysis.SymbolTable;
 
 public class RenamingVisitor implements Visitor{
@@ -13,7 +14,7 @@ public class RenamingVisitor implements Visitor{
 	}
 
 	public Object visit(ICClass icClass) {
-		for (SymbolTable sb : icClass.getEnclosingScope().getChildrenTable())
+		for (SymbolTable sb : ClassTable.getClassTable(icClass.getName()).getChildrenTable())
 		{
 			sb.updateTableName();
 		}
