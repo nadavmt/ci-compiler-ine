@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java_cup.runtime.Symbol;
 
 import IC.AST.*;
+import IC.LIR.RenamingVisitor;
 import IC.Parser.*;
 import IC.SemanticAnalysis.SemanticChecker;
 import IC.SemanticAnalysis.TableCreator;
@@ -130,6 +131,9 @@ public class Compiler
     		SemanticChecker checker = new SemanticChecker();
     		if (srcRoot.accept(checker) == null)
     			return;
+    		
+    		RenamingVisitor rv = new RenamingVisitor();
+    		srcRoot.accept(rv);
     		
     		if (dumpSymtab)
         	{
