@@ -36,4 +36,9 @@ public abstract class Call extends Expression {
 	public List<Expression> getArguments() {
 		return arguments;
 	}
+	
+	public void updateUniqueName()
+	{
+		name = "_" + this.getEnclosingScope() + "_" + name;
+	}
 }

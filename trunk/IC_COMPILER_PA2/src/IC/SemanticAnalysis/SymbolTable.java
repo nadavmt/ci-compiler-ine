@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import IC.AST.*;
 import IC.Parser.SemanticError;
 
 public abstract class SymbolTable {
@@ -57,4 +58,22 @@ public abstract class SymbolTable {
 	  }
 	  
 	  public abstract SymbolTableKind getTableKind(); 
+	  
+	  public void changeUniqueName(String name) {
+		Symbol s = entries.remove(name);
+		String newID =  "_" + id + "_" + name;
+		s.setId(newID);
+		entries.put(newID, s);
+	}
+	
+	public void changeUniqueName(Method m) {
+		Symbol s = entries.remove(m.getName());
+		String newID =  "_" + id + "_" + m.getName();
+		s.setId(newID);
+		entries.put(newID, s);
+	}
+
+	public void updateTableName() {
+		id = "_" + this.getParent().getId() + "_" + id;
+	}
 }

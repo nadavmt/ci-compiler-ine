@@ -55,4 +55,8 @@ public class VariableLocation extends Location {
 		return name;
 	}
 
+	public void updateUniqueName()
+	{
+		name = "_" + this.getEnclosingScope() + "_" + name;
+	}
 }
