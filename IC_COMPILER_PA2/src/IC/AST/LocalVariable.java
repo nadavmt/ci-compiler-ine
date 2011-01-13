@@ -63,4 +63,9 @@ public class LocalVariable extends Statement {
 		return initValue;
 	}
 
+	public void updateUniqueName()
+	{
+		this.getEnclosingScope().changeUniqueName(name);
+		name = "_" + this.getEnclosingScope().getId() + "_" + name;
+	}
 }

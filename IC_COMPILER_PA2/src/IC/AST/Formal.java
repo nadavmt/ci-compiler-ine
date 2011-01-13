@@ -37,4 +37,9 @@ public class Formal extends ASTNode {
 		return name;
 	}
 
+	public void updateUniqueName()
+	{
+		this.getEnclosingScope().changeUniqueName(name);
+		name = "_" + this.getEnclosingScope().getId() + "_" + name;
+	}
 }

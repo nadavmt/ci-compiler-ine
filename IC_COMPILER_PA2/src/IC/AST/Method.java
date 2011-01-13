@@ -74,5 +74,11 @@ public abstract class Method extends ASTNode {
 		
 		return str.toString();
 	}
+	
+	public void updateUniqueName()
+	{
+		this.getEnclosingScope().changeUniqueName(name);
+		name = "_" + this.getEnclosingScope().getId() + "_" + name;
+	}
 
 }

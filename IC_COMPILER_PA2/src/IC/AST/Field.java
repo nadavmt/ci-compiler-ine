@@ -42,4 +42,10 @@ public class Field extends ASTNode {
 	{
 		return name + " " + type;
 	}
+	
+	public void updateUniqueName()
+	{
+		this.getEnclosingScope().changeUniqueName(name);
+		name = "_" + this.getEnclosingScope().getId() + "_" + name;
+	}
 }
