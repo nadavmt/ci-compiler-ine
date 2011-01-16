@@ -2,6 +2,8 @@ package IC.AST;
 
 import java.util.List;
 
+import IC.SemanticAnalysis.SymbolTable;
+
 /**
  * Abstract base class for method call AST nodes.
  * 
@@ -37,8 +39,11 @@ public abstract class Call extends Expression {
 		return arguments;
 	}
 	
-	public void updateUniqueName()
+	public void updateUniqueName(int operNum)
 	{
-		name = "_" + this.getEnclosingScope() + "_" + name;
+		
+		SymbolTable t = this.getEnclosingScope();
+		t = t.findSymbolTable(name,operNum);		
+		name = "_" + t.getId() + "_" + name;
 	}
 }

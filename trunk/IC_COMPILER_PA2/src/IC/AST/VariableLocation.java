@@ -1,5 +1,7 @@
 package IC.AST;
 
+import IC.SemanticAnalysis.SymbolTable;
+
 /**
  * Variable reference AST node.
  * 
@@ -55,8 +57,10 @@ public class VariableLocation extends Location {
 		return name;
 	}
 
-	public void updateUniqueName()
+	public void updateUniqueName(int operNum)
 	{
-		name = "_" + this.getEnclosingScope() + "_" + name;
+		SymbolTable t = this.getEnclosingScope();
+		t = t.findSymbolTable(name,operNum);		
+		name = "_" + t.getId() + "_" + name;
 	}
 }
