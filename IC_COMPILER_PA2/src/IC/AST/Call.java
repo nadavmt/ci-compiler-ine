@@ -44,6 +44,9 @@ public abstract class Call extends Expression {
 		
 		SymbolTable t = this.getEnclosingScope();
 		t = t.findSymbolTable(name,operNum);		
-		name = "_" + t.getId() + "_" + name;
+		if (name.equals("main"))
+			name = "_ic_main";
+		else
+			name = "_" + t.getId() + "_" + name;
 	}
 }

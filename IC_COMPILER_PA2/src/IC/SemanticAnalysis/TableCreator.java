@@ -223,7 +223,7 @@ public class TableCreator implements Visitor {
 		Type t = (Type) formal.getType().accept(this);
 		if (t == null)
 			return null;
-		return new Symbol(formal.getName(), Kind.Field, t);
+		return new Symbol(formal.getName(), Kind.Variable, t);
 	}
 
 	public Object visit(StatementsBlock statementsBlock) {
@@ -353,7 +353,7 @@ public class TableCreator implements Visitor {
 		Type t = (Type) localVariable.getType().accept(this);
 		if (t == null)
 			return null;
-		Symbol s = new Symbol(localVariable.getName(), Kind.Field, t);
+		Symbol s = new Symbol(localVariable.getName(), Kind.Variable, t);
 		s.setOpCount(operationCounter);
 		
 		try {

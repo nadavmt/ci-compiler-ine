@@ -5,7 +5,7 @@ import java.util.HashMap;
 public class ClassSymbolTable extends SymbolTable {
 
 	private HashMap<String, Boolean> isStatic;
-	private DispatchTable dispatchTable = new DispatchTable();
+	private DispatchTable dispatchTable;
 	
 	public ClassSymbolTable(String id, SymbolTable parent) {
 		super(id, parent);
@@ -32,24 +32,21 @@ public class ClassSymbolTable extends SymbolTable {
 		this.parentSymbolTable = parent;
 	}
 	
-	public void addMethodOffset(String name, int index)
-	{
-		dispatchTable.methodOffset.put(name, index);
-	}
-	
+		
 	public int getMethodIndex (String name)
 	{
-		return dispatchTable.methodOffset.get(name);
+		return dispatchTable.methodOffset.get(name).counter;
 	}
 	
-	public void addFieldOffset(String name, int index)
-	{
-		dispatchTable.fieldOffset.put(name, index);
-	}
 	
 	public int getFieldIndex (String name)
 	{
-		return dispatchTable.fieldOffset.get(name);
+		return dispatchTable.fieldOffset.get(name).counter;
+	}
+
+	public void setDispatchTable(DispatchTable table) {
+		this.dispatchTable = table;
+		
 	}
 	
 }

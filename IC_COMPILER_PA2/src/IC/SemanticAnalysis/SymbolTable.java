@@ -58,7 +58,11 @@ public abstract class SymbolTable {
 
 	public void changeUniqueName(String name) {
 		Symbol s = entries.remove(name);
-		String newID = "_" + id + "_" + name;
+		String newID;
+		if (name.equals("main"))
+			newID = "_ic_main"; 
+		else
+			newID = "_" + id + "_" + name;
 		s.setId(newID);
 		entries.put(newID, s);
 	}
@@ -74,10 +78,12 @@ public abstract class SymbolTable {
 		id = "_" + this.getParent().getId() + "_" + id;
 	}
 
-	// finds the right symbol table
+	// finds the right symbol table containing name
 	public SymbolTable findSymbolTable(String name, int operNum) {
 		Symbol s;
 		SymbolTable t = this;
+		if (name.equals("_ic_main"))
+			return t;
 		try {
 			while (t != null) {
 				if (t.symbolExists("_" + t.getId() + "_" + name)) {
@@ -89,6 +95,7 @@ public abstract class SymbolTable {
 					if (s.GetOpCount() <= operNum)
 						return t;
 				}
+				
 				t = t.getParent();
 			}
 
