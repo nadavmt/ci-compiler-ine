@@ -53,5 +53,10 @@ public class Literal extends Expression {
 	public Object getValue() {
 		return value;
 	}
+	
+	public void setValue(Object newValue)
+	{
+		this.value = newValue;
+	}
 
 }

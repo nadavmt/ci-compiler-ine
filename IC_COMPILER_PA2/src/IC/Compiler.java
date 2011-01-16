@@ -111,11 +111,7 @@ public class Compiler
 			
 			System.out.println("Parsed " + currentFile + " successfully!");
     		
-        	if (prettyPrint)
-        	{
-        		printer = new PrettyPrinter(srcPath);
-        		System.out.println(srcRoot.accept(printer));
-        	}
+        	
         	
         	if (libPath != null)
         		srcRoot.getClasses().add(libRoot);
@@ -132,6 +128,7 @@ public class Compiler
     		if (srcRoot.accept(checker) == null)
     			return;
     		
+    		
     		RenamingVisitor rv = new RenamingVisitor();
     		srcRoot.accept(rv);
     		
@@ -140,6 +137,13 @@ public class Compiler
         		System.out.println();
         		System.out.println(symbolTable);
         	}
+    		if (prettyPrint)
+        	{
+        		printer = new PrettyPrinter(srcPath);
+        		System.out.println(srcRoot.accept(printer));
+        	}
+    		
+    		
     	}
     	catch (FileNotFoundException e)
     	{

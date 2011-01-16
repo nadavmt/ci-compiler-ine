@@ -2,6 +2,7 @@ package IC.SemanticAnalysis;
 
 public class Symbol {
 	private String id;
+	private String coreId;
 	private Kind kind;
 	private Type type;
 	
@@ -14,6 +15,7 @@ public class Symbol {
 		this.kind = kind;
 		this.type = type;
 		this.opCount = -1;
+		this.coreId = id;
 	}
 	
 	
@@ -48,7 +50,11 @@ public class Symbol {
 		return opCount;
 	}
 
-
+	public String getCoreId ()
+	{
+		return this.coreId;
+	}
+	
 	public void setId(String newID) {
 		id = newID;
 	}
