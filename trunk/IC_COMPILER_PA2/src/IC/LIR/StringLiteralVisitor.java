@@ -11,6 +11,7 @@ public class StringLiteralVisitor extends BaseVisitor {
 	
 	public StringLiteralVisitor(PrintWriter output)
 	{
+		
 		out = output;
 		counter = 0;
 	}

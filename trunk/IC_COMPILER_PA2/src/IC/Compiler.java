@@ -3,13 +3,19 @@ package IC;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+
+import quicktime.io.OpenFile;
 
 import java_cup.runtime.Symbol;
 
 import IC.AST.*;
+import IC.LIR.DispatchTablesCreator;
 import IC.LIR.RenamingVisitor;
+import IC.LIR.StringLiteralVisitor;
 import IC.Parser.*;
+import IC.SemanticAnalysis.DispatchTable;
 import IC.SemanticAnalysis.SemanticChecker;
 import IC.SemanticAnalysis.TableCreator;
 
@@ -116,6 +122,12 @@ public class Compiler
         	if (libPath != null)
         		srcRoot.getClasses().add(libRoot);
         	
+        	if (prettyPrint)
+        	{
+        		printer = new PrettyPrinter(srcPath);
+        		System.out.println(srcRoot.accept(printer));
+        	}
+    		
         	TableCreator tc = new TableCreator(srcPath);
     		Object symbolTable = srcRoot.accept(tc);
     		if (symbolTable == null)
@@ -129,19 +141,21 @@ public class Compiler
     			return;
     		
     		
-    		RenamingVisitor rv = new RenamingVisitor();
-    		srcRoot.accept(rv);
-    		
     		if (dumpSymtab)
         	{
         		System.out.println();
         		System.out.println(symbolTable);
         	}
-    		if (prettyPrint)
-        	{
-        		printer = new PrettyPrinter(srcPath);
-        		System.out.println(srcRoot.accept(printer));
-        	}
+    		
+    		PrintWriter lirFile = new PrintWriter("lir.txt");
+    		
+    		RenamingVisitor rv = new RenamingVisitor();
+    		srcRoot.accept(rv);
+    		StringLiteralVisitor sl = new StringLiteralVisitor(lirFile);
+    		srcRoot.accept(sl);
+    		DispatchTablesCreator dt = new DispatchTablesCreator(lirFile);
+    		dt.create(srcRoot);
+    		lirFile.close();
     		
     		
     	}

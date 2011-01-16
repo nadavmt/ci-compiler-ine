@@ -1,32 +1,26 @@
 package IC.LIR;
 
+import java.io.PrintWriter;
+
 import IC.AST.*;
 import IC.SemanticAnalysis.*;
 
 
 
-public class LirTranlationVisitor implements Visitor {
+public class LirTranlationVisitor extends BaseVisitor {
 
-public Object visit(Program program) {
-		
-		for (ICClass icClass : program.getClasses())
-			icClass.accept(this);
-		return true;
+	PrintWriter out;
+	int regCounter = 1;
+	int labelCounter = 1;
+	String exitLabel="";
+	String contLabel="";
+	
+	public LirTranlationVisitor(PrintWriter output)
+	{
+		out = output;
 	}
-
-	public Object visit(ICClass icClass) {
-		for (SymbolTable sb : ClassTable.getClassTable(icClass.getName()).getChildrenTable())
-		{
-			sb.updateTableName();
-		}
-		
-		for (Field field : icClass.getFields())
-			field.accept(this);
-		for (Method method : icClass.getMethods())
-			method.accept(this);
-		return true;
-	}
-
+	
+	
 	public Object visit(PrimitiveType type) {
 		return true;
 	}
@@ -36,83 +30,104 @@ public Object visit(Program program) {
 	}
 
 	public Object visit(Field field) {
-		field.updateUniqueName();	
+			
 		return true;
 	}
 
 	public Object visit(LibraryMethod method) {
-		method.updateUniqueName();
+	
 		return true;
 	}
 
 	public Object visit(Formal formal) {
-		formal.updateUniqueName();
+	
 		return true;
 	}
 
 	public Object visitMethod(Method method) {
-		method.updateUniqueName();
-		for (Formal formal : method.getFormals())
-			formal.accept(this);
-		for (Statement statement : method.getStatements())
-			statement.accept(this);
+		out.println(method.getName()+ ":");
+		regCounter = 1;
+		return super.visitMethod(method);
 		
-		return true;
 	}
 	
-	public Object visit(VirtualMethod method) {
-		return visitMethod(method);
-	}
-
-	public Object visit(StaticMethod method) {
-		return visitMethod(method);
-	}
 
 	public Object visit(Assignment assignment) {
+		String varResult;
+		String assResult;
+		varResult = (String) assignment.getAssignment().accept(this);
+		assResult = (String) assignment.getVariable().accept(this);
+		String command = "Move";
+		if (varResult.contains(".")|| assResult.contains("."))
+			command = "MoveField";
 		
-		assignment.getVariable().accept(this);
-		assignment.getAssignment().accept(this);
+		out.println(command + " "+ assResult + "," + varResult);
+		out.println(command + " "+ varResult + ",R"+ regCounter);
+		regCounter++;
 		
 		return true;
 	}
 
-	public Object visit(CallStatement callStatement) {
-		
-		callStatement.getCall().accept(this);
-		return true;
-	}
 
-	public Object visit(Return returnStatement) {
-
+	public Object visit(Return returnStatement) {	
+		String retValue = "";
 		if (returnStatement.hasValue()) {
-			returnStatement.getValue().accept(this);
+			retValue = (String) returnStatement.getValue().accept(this);
 		}
+		out.println("Return " + retValue);
 		return true;
 	}
 
 	public Object visit(If ifStatement) {
-		ifStatement.getCondition().accept(this);
+		String condResult = (String) ifStatement.getCondition().accept(this);
+		String falseLabel = "_false_label"+ labelCounter;
+		labelCounter++;
+		String endLabel = "_end_label"+labelCounter;
+		labelCounter++;
+		out.println("Compare 0,"+condResult);
+		out.println("JumpTrue "+falseLabel);
 		ifStatement.getOperation().accept(this);
+		out.println("Jump "+endLabel);
+		out.println(falseLabel+":");
 		if (ifStatement.hasElse())
+			{
 			ifStatement.getElseOperation().accept(this);
+			}
+		out.println(endLabel+":");
 		
 		return true;
 	}
 
 	public Object visit(While whileStatement) {
-		whileStatement.getCondition().accept(this);
+		String testLabel = "_test_label"+ regCounter++;
+		String endLabel = "_end_label" + regCounter++;
+		String prevExit = exitLabel;
+		String prevCont = contLabel;
+		exitLabel = endLabel;
+		contLabel = testLabel;
+		out.println(testLabel+":");
+		String condResult = (String) whileStatement.getCondition().accept(this);
+		out.println("Compare 0,"+condResult);
+		out.println("JumpTrue "+endLabel);
 		whileStatement.getOperation().accept(this);
+		out.println("Jump "+ testLabel);
+		out.println(endLabel+":");
+		exitLabel = prevExit;
+		contLabel = prevCont;
 		return true;
 	}
 
 	public Object visit(Break breakStatement) {
+		out.println("Jump "+ exitLabel);
 		return true;
 	}
 
 	public Object visit(Continue continueStatement) {
+		out.println("Jump "+ contLabel);
 		return true;
 	}
-
+/*****************************************************************/
+	
 	public Object visit(StatementsBlock statementsBlock) {
 		for (Statement statement : statementsBlock.getStatements())
 			statement.accept(this);
@@ -121,8 +136,7 @@ public Object visit(Program program) {
 	}
 
 	public Object visit(LocalVariable localVariable) {
-		localVariable.updateUniqueName();
-		
+		operationCounter++;
 		localVariable.getType().accept(this);
 		if (localVariable.hasInitValue()) {
 			localVariable.getInitValue().accept(this);
@@ -132,7 +146,7 @@ public Object visit(Program program) {
 	}
 
 	public Object visit(VariableLocation location) {
-		location.updateUniqueName();
+		
 		if (location.isExternal()) {
 			location.getLocation().accept(this);
 		}
@@ -140,6 +154,7 @@ public Object visit(Program program) {
 	}
 
 	public Object visit(ArrayLocation location) {
+		operationCounter++;
 		location.getArray().accept(this);
 		location.getIndex().accept(this);
 		
@@ -147,7 +162,7 @@ public Object visit(Program program) {
 	}
 
 	public Object visit(StaticCall call) {
-		call.updateUniqueName();
+
 		for (Expression argument : call.getArguments())
 			argument.accept(this);
 		
@@ -155,7 +170,7 @@ public Object visit(Program program) {
 	}
 
 	public Object visit(VirtualCall call) {
-		call.updateUniqueName();
+
 		if (call.isExternal())
 			call.getLocation().accept(this);
 		for (Expression argument : call.getArguments())
