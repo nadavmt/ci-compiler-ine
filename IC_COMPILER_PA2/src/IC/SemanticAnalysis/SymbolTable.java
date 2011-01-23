@@ -104,4 +104,12 @@ public abstract class SymbolTable {
 		}
 		return t;
 	}
+
+	public void changeUniqueLibraryName(String name) {
+		Symbol s = entries.remove(name);
+		String newID;
+		newID = "__" + name;
+		s.setId(newID);
+		entries.put(newID, s);
+	}
 }

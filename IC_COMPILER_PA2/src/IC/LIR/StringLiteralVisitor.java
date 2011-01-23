@@ -22,8 +22,8 @@ public class StringLiteralVisitor extends BaseVisitor {
 		if (literal.getType() == LiteralTypes.STRING)
 		{
 			counter++;
-			String newLabel = "str" + counter + ": "; 
-			out.println(newLabel + literal.getValue());
+			String newLabel = "str" + counter ; 
+			out.println(newLabel+ ": " + literal.getValue());
 			literal.setValue(newLabel);	
 		}
 		return true;

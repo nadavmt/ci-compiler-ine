@@ -1,14 +1,19 @@
 class A {
+
 	string a;
-  void sfunc() {
+	string sfunc() {
 		
 		a = "asdasd";
-		int a = 3;
-		
+		return a;
   }
   
   static void main(string[] args)
   {
+	A a = new A();
+	string s = a.sfunc();
+	int x;
+	Library.println(s);
+	//Library.println(x);
   }
   
 }

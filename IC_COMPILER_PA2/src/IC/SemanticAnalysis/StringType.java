@@ -19,4 +19,5 @@ public class StringType extends Type
 	{		
 		return new StringType(dimension);
 	}
+	
 }

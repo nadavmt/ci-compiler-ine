@@ -2,6 +2,7 @@ package IC.AST;
 
 import java.util.List;
 
+import IC.SemanticAnalysis.ClassTable;
 import IC.SemanticAnalysis.SymbolTable;
 
 /**
@@ -46,6 +47,17 @@ public abstract class Call extends Expression {
 		t = t.findSymbolTable(name,operNum);		
 		if (name.equals("main"))
 			name = "_ic_main";
+		else
+			name = "_" + t.getId() + "_" + name;
+	}
+	
+	public void updateUniqueStaticName(String className)
+	{
+		SymbolTable t = ClassTable.getClassTable(className);
+		if (name.equals("main"))
+			name = "_ic_main";
+		else if (className.equals("Library"))
+			name = "__" + name;
 		else
 			name = "_" + t.getId() + "_" + name;
 	}

@@ -12,6 +12,7 @@ import java_cup.runtime.Symbol;
 
 import IC.AST.*;
 import IC.LIR.DispatchTablesCreator;
+import IC.LIR.LirTranlationVisitor;
 import IC.LIR.RenamingVisitor;
 import IC.LIR.StringLiteralVisitor;
 import IC.Parser.*;
@@ -44,6 +45,8 @@ public class Compiler
 		
 		String libPath = null;
 		String srcPath = null;
+	
+		
 		
 		boolean prettyPrint = false;
 		boolean dumpSymtab = false;
@@ -74,6 +77,7 @@ public class Compiler
     	
     	File srcFile = new File(srcPath);
     	
+    	String lirPath = srcFile.getAbsoluteFile() + ".lir";
     	
     	FileInputStream fis = null;
     	FileInputStream lis = null;
@@ -147,7 +151,7 @@ public class Compiler
         		System.out.println(symbolTable);
         	}
     		
-    		PrintWriter lirFile = new PrintWriter("lir.txt");
+    		PrintWriter lirFile = new PrintWriter(lirPath);
     		
     		RenamingVisitor rv = new RenamingVisitor();
     		srcRoot.accept(rv);
@@ -155,9 +159,11 @@ public class Compiler
     		srcRoot.accept(sl);
     		DispatchTablesCreator dt = new DispatchTablesCreator(lirFile);
     		dt.create(srcRoot);
+    		
+    		LirTranlationVisitor lir = new LirTranlationVisitor(lirFile);
+    		srcRoot.accept(lir);
+    		
     		lirFile.close();
-    		
-    		
     	}
     	catch (FileNotFoundException e)
     	{

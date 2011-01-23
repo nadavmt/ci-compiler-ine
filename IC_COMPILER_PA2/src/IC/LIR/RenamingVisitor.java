@@ -23,7 +23,7 @@ public class RenamingVisitor extends BaseVisitor{
 	}
 
 	public Object visit(LibraryMethod method) {
-		method.updateUniqueName();
+		method.updateLibraryUniqueName();
 		return true;
 	}
 
@@ -50,7 +50,7 @@ public class RenamingVisitor extends BaseVisitor{
 
 	
 	public Object visit(StaticCall call) {
-		call.updateUniqueName(operationCounter);
+		call.updateUniqueStaticName(call.getClassName());
 		return super.visit(call);
 	}
 
