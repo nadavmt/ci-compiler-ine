@@ -36,4 +36,6 @@ public abstract class Type
 	{
 		this.dimension = i;
 	}
+	
+
 }

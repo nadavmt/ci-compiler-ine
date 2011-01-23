@@ -14,4 +14,8 @@ public class NullType extends Type
 	{	
 		return new NullType();
 	}
+	
+	public String getDefaultValue(){
+		return "";
+	}
 }

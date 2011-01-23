@@ -14,10 +14,13 @@ public class DispatchTablesCreator {
 	}
 
 	public void create(Program program) {
-		for (ICClass icClass : program.getClasses()) {	
-			DispatchTable t = createClassDispatchTable(icClass);
-			ClassTable.getClassTable(icClass.getName()).setDispatchTable(t);
-			out.println(t.toString());
+		for (ICClass icClass : program.getClasses()) {
+			if (!icClass.getName().equals("Library"))
+			{
+				DispatchTable t = createClassDispatchTable(icClass);
+				ClassTable.getClassTable(icClass.getName()).setDispatchTable(t);
+				out.println(t.toString());
+			}
 		}
 	}
 

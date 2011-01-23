@@ -18,4 +18,6 @@ public class IntType extends Type
 	public Type clone() {		
 		return new IntType(dimension);
 	}
+	
+	
 }
