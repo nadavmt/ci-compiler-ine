@@ -63,6 +63,7 @@ public class Compiler
 				throw new Exception("Illegal number of arguments");
 			
 			srcPath = myArgs.get(0);
+			//srcPath = "C:\\MyCompiler\\IC_COMPILER_PA2\\test\\binaryOperations.ic";
 		}
 		catch (Exception e)
 		{
@@ -72,7 +73,7 @@ public class Compiler
     	
     	File srcFile = new File(srcPath);
     	
-    	String lirPath = srcFile.getAbsoluteFile() + ".lir";
+    	String lirPath = nameWithoutExtension(srcFile.getAbsolutePath()) + ".lir";
     	
     	FileInputStream fis = null;
     	FileInputStream lis = null;
@@ -236,4 +237,14 @@ public class Compiler
 		
 		return null;
 	}
+	
+	private static String nameWithoutExtension (String str) {
+        if (str == null)
+            return null;
+        int pos = str.lastIndexOf(".");
+        if (pos == -1)
+            return str;
+        return str.substring(0,pos);
+    }
+
 }
