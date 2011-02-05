@@ -11,7 +11,6 @@ public class StringLiteralVisitor extends BaseVisitor {
 	
 	public StringLiteralVisitor(PrintWriter output)
 	{
-		
 		out = output;
 		counter = 0;
 	}
@@ -26,6 +25,12 @@ public class StringLiteralVisitor extends BaseVisitor {
 			out.println(newLabel+ ": " + literal.getValue());
 			literal.setValue(newLabel);	
 		}
+		
 		return true;
+	}
+	
+	public int getCount()
+	{
+		return counter;
 	}
 }

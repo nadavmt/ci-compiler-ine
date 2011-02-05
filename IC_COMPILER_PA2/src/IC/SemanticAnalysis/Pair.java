@@ -1,8 +1,10 @@
 package IC.SemanticAnalysis;
 
-public class Pair {
+public class Pair
+{
 	public String uniqueName;
 	public int counter;
+	
 	public Pair(String name,int count)
 	{
 		this.uniqueName = name;

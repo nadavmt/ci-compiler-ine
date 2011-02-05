@@ -6,17 +6,14 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
-import quicktime.io.OpenFile;
-
 import java_cup.runtime.Symbol;
 
 import IC.AST.*;
 import IC.LIR.DispatchTablesCreator;
-import IC.LIR.LirTranlationVisitor;
+import IC.LIR.LirTranslationVisitor;
 import IC.LIR.RenamingVisitor;
 import IC.LIR.StringLiteralVisitor;
 import IC.Parser.*;
-import IC.SemanticAnalysis.DispatchTable;
 import IC.SemanticAnalysis.SemanticChecker;
 import IC.SemanticAnalysis.TableCreator;
 
@@ -45,8 +42,6 @@ public class Compiler
 		
 		String libPath = null;
 		String srcPath = null;
-	
-		
 		
 		boolean prettyPrint = false;
 		boolean dumpSymtab = false;
@@ -91,7 +86,9 @@ public class Compiler
     	try
     	{
     		ICClass libRoot = null;
-			if (libPath != null) {
+    		
+			if (libPath != null)
+			{
 				File libFile = new File(libPath);
 				currentFile = libPath;
 				lis = new FileInputStream(libFile);
@@ -104,7 +101,8 @@ public class Compiler
 
 				System.out.println("Parsed " + currentFile + " successfully!");
 
-				if (prettyPrint) {
+				if (prettyPrint)
+				{
 					printer = new PrettyPrinter(libPath);
 					System.out.println(libRoot.accept(printer) + "\n");
 				}
@@ -121,10 +119,10 @@ public class Compiler
 			
 			System.out.println("Parsed " + currentFile + " successfully!");
     		
-        	
-        	
         	if (libPath != null)
+			{
         		srcRoot.getClasses().add(libRoot);
+			}
         	
         	if (prettyPrint)
         	{
@@ -134,16 +132,18 @@ public class Compiler
     		
         	TableCreator tc = new TableCreator(srcPath);
     		Object symbolTable = srcRoot.accept(tc);
+			
     		if (symbolTable == null)
     		{
-    			// we where not able not create the symbol table
-    			return;
+    			return; // we where not able not create the symbol table
     		}
     		
     		SemanticChecker checker = new SemanticChecker();
+			
     		if (srcRoot.accept(checker) == null)
+			{
     			return;
-    		
+			}
     		
     		if (dumpSymtab)
         	{
@@ -160,7 +160,7 @@ public class Compiler
     		DispatchTablesCreator dt = new DispatchTablesCreator(lirFile);
     		dt.create(srcRoot);
     		
-    		LirTranlationVisitor lir = new LirTranlationVisitor(lirFile);
+    		LirTranslationVisitor lir = new LirTranslationVisitor(lirFile, rv.getUniqueToType(), dt.getOffsets(), sl.getCount());
     		srcRoot.accept(lir);
     		
     		lirFile.close();

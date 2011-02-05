@@ -44,8 +44,8 @@ public abstract class BaseVisitor implements Visitor {
 			return true;
 		}
 
-		public Object visitMethod(Method method) {
-		
+		public Object visitMethod(Method method)
+		{
 			for (Formal formal : method.getFormals())
 				formal.accept(this);
 			for (Statement statement : method.getStatements())

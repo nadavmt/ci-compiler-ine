@@ -32,21 +32,19 @@ public class ClassSymbolTable extends SymbolTable {
 		this.parentSymbolTable = parent;
 	}
 	
-		
-	public int getMethodIndex (String name)
+	public int getMethodIndex(String name)
 	{
 		return dispatchTable.methodOffset.get(name).counter;
 	}
 	
 	
-	public int getFieldIndex (String name)
+	public int getFieldIndex(String name)
 	{
 		return dispatchTable.fieldOffset.get(name).counter;
 	}
 
-	public void setDispatchTable(DispatchTable table) {
+	public void setDispatchTable(DispatchTable table)
+	{
 		this.dispatchTable = table;
-		
 	}
-	
 }

@@ -1,6 +1,7 @@
 package IC.SemanticAnalysis;
 
-public class Symbol {
+public class Symbol
+{
 	private String id;
 	private String coreId;
 	private Kind kind;
@@ -10,14 +11,14 @@ public class Symbol {
 	
 	private boolean isFormal = false;
 	
-	public Symbol(String id, Kind kind, Type type) {
+	public Symbol(String id, Kind kind, Type type)
+	{
 		this.id = id;
 		this.kind = kind;
 		this.type = type;
 		this.opCount = -1;
 		this.coreId = id;
 	}
-	
 	
 	public void setOpCount(int count)
 	{
@@ -55,7 +56,8 @@ public class Symbol {
 		return this.coreId;
 	}
 	
-	public void setId(String newID) {
+	public void setId(String newID)
+	{
 		id = newID;
 	}
 }

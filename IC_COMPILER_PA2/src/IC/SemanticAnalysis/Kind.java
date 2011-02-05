@@ -1,6 +1,7 @@
 package IC.SemanticAnalysis;
 
-public enum Kind {
+public enum Kind
+{
 	Class,
 	Method,
 	Field,

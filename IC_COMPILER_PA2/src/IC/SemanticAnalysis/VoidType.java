@@ -18,5 +18,4 @@ public class VoidType extends Type
 	public Type clone() {
 		return new VoidType();
 	}
-	
 }

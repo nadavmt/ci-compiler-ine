@@ -33,6 +33,4 @@ public class LibraryMethod extends Method {
 	{
 		return true;
 	}
-
-	
 }
