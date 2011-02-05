@@ -1,7 +1,5 @@
 package IC.AST;
 
-import IC.SemanticAnalysis.SymbolTable;
-
 /**
  * Local variable declaration statement AST node.
  * 
@@ -67,7 +65,6 @@ public class LocalVariable extends Statement {
 
 	public void updateUniqueName()
 	{
-		
 		this.getEnclosingScope().changeUniqueName(name);
 		name = "_" + this.getEnclosingScope().getId() + "_" + name;
 	}

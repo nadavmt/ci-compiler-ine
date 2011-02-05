@@ -1,0 +1,22 @@
+str1: "asdasd"
+str2: "mooooooooo"
+_DV_A: [_A_sfunc,_ic_main]
+Move 0, _A_a
+_A_sfunc:
+Move _A_a, R1
+Move str1, R1
+Move str2, __A_sfunc_b
+Move _A_a, R2
+Move __A_sfunc_b, R3
+Add R2, R3
+Return R3
+_ic_main:
+Library __allocateObject(4), R1
+MoveField _DV_A, R1.0
+Move R1, __A_main_a
+Move __A_main_a, R2
+VirtualCall R2._A_sfunc(), R3
+Move R3, __A_main_s
+Move 0, __A_main_x
+Move __A_main_s, R4
+Library __println(R4), Rdummy

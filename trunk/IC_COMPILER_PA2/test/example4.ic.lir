@@ -1,18 +1,22 @@
-str1: "asdasd"
-_DV_A: [_A_sfunc,_ic_main]
+str1: "hello"
+str2: "asdasd"
+str3: "yesyesno"
+_DV_A: [_A_tfunc,_A_sfunc,_ic_main]
 Move 0, _A_a
+_A_tfunc:
+Return str1
 _A_sfunc:
-Move _A_a, R1
-Move R1,str1
-Move _A_a, R2
-Return R2
+Move boo, R1
+MoveField 0, R2
+Move str2, R2
+MoveField 0, R3
+Move R1, R4
+Library __stringCat(R3, R4), R4
+Return R4
 _ic_main:
 Library __allocateObject(4), R1
 MoveField _DV_A, R1.0
-Move R1, __A_main_a
-Move __A_main_a, R2
-VirtualCall R2._A_sfunc(), R3
-Move R3, __A_main_s
-Move 0, __A_main_x
-Move __A_main_s, R4
-Library __println(R4), Rdummy
+Move R1, R2
+Move R2, R3
+VirtualCall R3.1(boo=str3), R4
+Move R4, R5

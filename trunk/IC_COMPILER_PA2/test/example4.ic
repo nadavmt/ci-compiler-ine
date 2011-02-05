@@ -1,19 +1,25 @@
-class A {
-
+class A
+{
 	string a;
-	string sfunc() {
-		
+	
+	string tfunc()
+	{
+		return "hello";
+	}
+	
+	string sfunc(string boo)
+	{
 		a = "asdasd";
-		return a;
-  }
-  
-  static void main(string[] args)
-  {
-	A a = new A();
-	string s = a.sfunc();
-	int x;
-	Library.println(s);
-	//Library.println(x);
-  }
-  
+		
+		return a + boo;
+	}
+	
+	static void main(string[] args)
+	{
+		A a = new A();
+		string s = a.sfunc("yesyesno");
+		//int x;
+		//Library.println(s);
+		//Library.println(x);
+	}
 }

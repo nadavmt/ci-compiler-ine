@@ -84,7 +84,8 @@ public abstract class Method extends ASTNode {
 			name = "_" + this.getEnclosingScope().getId() + "_" + name;
 	}
 
-	public void updateLibraryUniqueName() {
+	public void updateLibraryUniqueName()
+	{
 		this.getEnclosingScope().changeUniqueLibraryName(name);
 		name = "__" + name;
 	}

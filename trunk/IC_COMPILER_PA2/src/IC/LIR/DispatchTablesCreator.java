@@ -1,25 +1,48 @@
 package IC.LIR;
 
 import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
 
 import IC.AST.*;
 import IC.SemanticAnalysis.*;
 
-public class DispatchTablesCreator {
+public class DispatchTablesCreator
+{
+	private Map<String, Integer> offsets = null;
+	
+	private PrintWriter out = null;
 
-	private PrintWriter out;
-
-	public DispatchTablesCreator(PrintWriter output) {
+	public DispatchTablesCreator(PrintWriter output)
+	{
 		out = output;
+		
+		offsets = new HashMap<String, Integer>();
 	}
 
+	public Map<String, Integer> getOffsets()
+	{
+		return offsets;
+	}
+	
 	public void create(Program program) {
 		for (ICClass icClass : program.getClasses()) {
 			if (!icClass.getName().equals("Library"))
 			{
 				DispatchTable t = createClassDispatchTable(icClass);
 				ClassTable.getClassTable(icClass.getName()).setDispatchTable(t);
+				
 				out.println(t.toString());
+				
+				for (Pair p : t.methodOffset.values())
+				{
+					offsets.put(p.uniqueName, p.counter);
+				}
+				
+				for (Pair p : t.fieldOffset.values())
+				{
+					offsets.put(p.uniqueName, p.counter);
+				}
 			}
 		}
 	}
