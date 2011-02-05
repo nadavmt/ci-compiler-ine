@@ -11,6 +11,7 @@ import IC.Parser.SemanticError;
 public class SemanticChecker implements Visitor {
 
 	private int operationCounter = 0;
+	private boolean isStatic;
 	
 	@Override
 	public Object visit(Program program) {
@@ -135,16 +136,19 @@ public class SemanticChecker implements Visitor {
 	
 	@Override
 	public Object visit(VirtualMethod method) {
+		isStatic = false;
 		return methodVisitor(method);
 	}
 
 	@Override
 	public Object visit(StaticMethod method) {
+		isStatic = true;
 		return methodVisitor(method);
 	}
 
 	@Override
 	public Object visit(LibraryMethod method) {
+		isStatic = true;
 		return methodVisitor(method);
 	}
 
@@ -552,6 +556,7 @@ public class SemanticChecker implements Visitor {
 			else
 			{
 				t = call.getEnclosingScope();
+				
 			}
 		
 			while (t.getParent()!=null)
@@ -561,9 +566,20 @@ public class SemanticChecker implements Visitor {
 					Type memberType = t.getSymbol(call.getName()).getType();
 					if (memberType instanceof MethodType)
 					{
+						
 						MethodType mt = (MethodType) memberType;
+						
+						if ( ((ClassSymbolTable)t).isStaticMethod(call.getName()) == true)
+						{
+							throw new SemanticError(call.getLine(), "cannot call a static method from a virtual context");
+						}
+						
 						if (checkMethodParams(mt,call) ==null)
 							return null;
+						
+						if (isStatic && !call.isExternal())
+							throw new SemanticError(call.getLine(), "cannot call a virtual method from a static context");
+						
 						return (mt.getReturnType());
 					}
 					else

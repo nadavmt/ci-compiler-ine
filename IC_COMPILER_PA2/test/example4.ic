@@ -2,24 +2,24 @@ class A
 {
 	string a;
 	
-	string tfunc()
+	int foo()
 	{
-		return "hello";
+		return 2;
 	}
 	
-	string sfunc(string boo)
+	static int foo2()
 	{
-		a = "asdasd";
-		
-		return a + boo;
+		return 2;
 	}
 	
 	static void main(string[] args)
 	{
+		int x = 1+2;
+		int y = x + 10 * 2 + x;
+		
 		A a = new A();
-		string s = a.sfunc("yesyesno");
-		//int x;
-		//Library.println(s);
-		//Library.println(x);
+		int bb = a.foo() + A.foo2() + 4;
+	
+		Library.println(Library.itos(bb));
 	}
 }

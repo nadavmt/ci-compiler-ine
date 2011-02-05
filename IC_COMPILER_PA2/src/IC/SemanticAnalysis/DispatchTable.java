@@ -5,7 +5,7 @@ import java.util.HashMap;
 public class DispatchTable
 {
 	private int methodCount = 0;
-	private int fieldCount = 0;
+	private int fieldCount = 1;
 	public HashMap<String, Pair> methodOffset;
 	public HashMap<String, Pair> fieldOffset;
 	private String name;
