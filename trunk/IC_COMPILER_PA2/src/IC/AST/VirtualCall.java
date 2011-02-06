@@ -2,6 +2,10 @@ package IC.AST;
 
 import java.util.List;
 
+import IC.SemanticAnalysis.ClassType;
+import IC.SemanticAnalysis.SymbolTable;
+import IC.SemanticAnalysis.Type;
+
 /**
  * Virtual method call AST node.
  * 
@@ -53,6 +57,10 @@ public class VirtualCall extends Call {
 
 	public Expression getLocation() {
 		return location;
+	}
+
+	public void updateUniqueVirtualName(ClassType ct, int operationCounter) {
+		name = "_" + ct.getName() + "_" + name;
 	}
 
 }

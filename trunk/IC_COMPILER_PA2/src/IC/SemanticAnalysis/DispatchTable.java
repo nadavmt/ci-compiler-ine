@@ -16,6 +16,10 @@ public class DispatchTable
 		fieldOffset = new HashMap<String, Pair>();
 		this.name  = name;
 	}
+	public int getFieldCount()
+	{
+		return fieldCount-1;
+	}
 	
 	public void addMethod(String methodName, String uniqueName)
 	{

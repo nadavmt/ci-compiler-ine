@@ -12,7 +12,7 @@ import IC.SemanticAnalysis.SymbolTable;
  */
 public abstract class Call extends Expression {
 
-	private String name;
+	protected String name;
 
 	private List<Expression> arguments;
 
@@ -42,7 +42,6 @@ public abstract class Call extends Expression {
 	
 	public void updateUniqueName(int operNum)
 	{
-		
 		SymbolTable t = this.getEnclosingScope();
 		t = t.findSymbolTable(name,operNum);		
 		if (name.equals("main"))

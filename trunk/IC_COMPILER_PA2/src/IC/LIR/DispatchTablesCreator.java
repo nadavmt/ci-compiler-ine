@@ -64,7 +64,8 @@ public class DispatchTablesCreator
 
 			for (Field f : icClass.getFields()) {
 				st = t.findSymbolTable(f.getName(), Integer.MAX_VALUE);
-				dTable.addField(st.getSymbol(f.getName()).getCoreId(),f.getName());
+				String name = f.getName();
+				dTable.addField(st.getSymbol(name).getCoreId(),name);
 			}
 			for (Method m : icClass.getMethods()) {
 				st = t.findSymbolTable(m.getName(), Integer.MAX_VALUE);

@@ -335,7 +335,9 @@ Expression ::=
 	:} |
 	NEW Type:type LB Expression:exp RB
 	{:
-		RESULT = new NewArray(type, exp);
+		NewArray a = new NewArray(type, exp);
+		a.incrementDimension();
+		RESULT = a;
 	:} |
 	Expression:exp DOT LENGTH
 	{:

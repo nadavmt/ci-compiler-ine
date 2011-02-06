@@ -654,7 +654,7 @@ public class SemanticChecker implements Visitor {
 			if (!sizeType.getName().equals(IntType.NAME))
 				throw new SemanticError(newArray.getLine(),"array size must be of type int");
 			Type ret = elemType.clone();
-			ret.setDimension(elemType.getDimension()+1);
+			ret.setDimension(elemType.getDimension());//+1
 			return ret;
 		}
 		catch (SemanticError e)
