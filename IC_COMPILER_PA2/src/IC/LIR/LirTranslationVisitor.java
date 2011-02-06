@@ -7,7 +7,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import sun.java2d.pipe.LoopPipe;
+
 import IC.BinaryOps;
+import IC.DataTypes;
 import IC.LiteralTypes;
 import IC.AST.*;
 import IC.Parser.SemanticError;
@@ -47,6 +50,13 @@ public class LirTranslationVisitor extends BaseVisitor
 		}
 	}
 		
+	public Object visit(Program program)
+	{
+		super.visit(program);
+		out.println("_end_of_program:" );
+		return true;
+		
+	}
 	public Object visit(Field field)
 	{
 		//out.println("Move 0, " + field.getName());
@@ -95,7 +105,10 @@ public class LirTranslationVisitor extends BaseVisitor
 			} catch (SemanticError e) {
 			}
 		}
-		
+		else
+		{
+			out.println("Jump _end_of_program");
+		}
 		return true;
 	}
 	
@@ -109,8 +122,6 @@ public class LirTranslationVisitor extends BaseVisitor
 		
 		String command = "Move";
 		
-		
-		
 		if (varResult.contains(".") || assResult.contains("."))
 		{
 			int periodIndex = assResult.lastIndexOf(".");
@@ -118,7 +129,6 @@ public class LirTranslationVisitor extends BaseVisitor
 			String fieldName = assResult.substring(periodIndex + 1);
 			Type fieldType = uniqueToType.get(fieldName);
 			
-			assert(fieldType != null);
 			
 			if (!varResult.contains(".") && varResult.startsWith("R"))
 			{
@@ -127,23 +137,18 @@ public class LirTranslationVisitor extends BaseVisitor
 			
 			command = "MoveField";
 		}
-		else if (varResult.contains("[") || assResult.contains("["))
+		else if (varResult.contains("["))
 		{
-			int bracketIndex = assResult.lastIndexOf("[");
-			
-			String fieldName = assResult.substring(0, bracketIndex);
 			Type fieldType = null;
 			
-			if (fieldName.startsWith("R"))
+			if (assResult.startsWith("R"))
 			{
-				fieldType = regToType.get(fieldName);
+				fieldType = regToType.get(assResult);
 			}
 			else
 			{
-				fieldType = uniqueToType.get(fieldName);
+				fieldType = uniqueToType.get(assResult);
 			}
-			
-			assert(fieldType != null);
 			
 			if (!varResult.contains("[") && varResult.startsWith("R"))
 			{
@@ -167,8 +172,6 @@ public class LirTranslationVisitor extends BaseVisitor
 			{
 				fieldType = uniqueToType.get(assResult);
 			}
-			
-			assert(fieldType != null);
 			
 			if (varResult.startsWith("R"))
 			{
@@ -198,7 +201,7 @@ public class LirTranslationVisitor extends BaseVisitor
 	public Object visit(If ifStatement)
 	{
 		String condResult = (String) ifStatement.getCondition().accept(this);
-		
+		condResult = newReg(condResult);
 		String falseLabel = "_false_label" + labelCounter;
 		labelCounter++;
 		
@@ -237,7 +240,7 @@ public class LirTranslationVisitor extends BaseVisitor
 		out.println(testLabel + ":");
 		
 		String condResult = (String) whileStatement.getCondition().accept(this);
-		
+		condResult = newReg(condResult);
 		out.println("Compare 0, " + condResult);
 		out.println("JumpTrue " + endLabel);
 		
@@ -295,21 +298,11 @@ public class LirTranslationVisitor extends BaseVisitor
 			
 			Type regType = null;
 			
-			if (initValue.startsWith("R"))
-			{
-				regType = regToType.get(initValue);
+			try {
+				regType = localVariable.getEnclosingScope().getSymbol(localVariable.getName()).getType();
+			} catch (SemanticError e) {
+				
 			}
-			else if (initValue.startsWith("_"))
-			{
-				regType = uniqueToType.get(initValue);
-			}
-			else if (initValue.startsWith("str"))
-			{
-				regType = new StringType();
-			}
-			
-			assert(regType != null);
-			
 			regToType.put(varReg, regType);
 		}
 		
@@ -321,7 +314,7 @@ public class LirTranslationVisitor extends BaseVisitor
 	public Object visit(VariableLocation location)
 	{
 		String name = location.getName();
-		if (location.isExternal())
+		if (location.isExternal()&& (!(location.getLocation() instanceof This)))
 		{
 			Type type = uniqueToType.get(name);
 			
@@ -341,24 +334,44 @@ public class LirTranslationVisitor extends BaseVisitor
 			String regName = "R" + regCounter++;
 			
 			Type type = null;
-			String command = null;
+			//String command = null;
 			
 			if (uniqueToReg.containsKey(name))
 			{
 				name = uniqueToReg.get(name);
-				type = regToType.get(name);
-				command = "Move";
+				return name;
 			}
 			else
 			{
-				type = uniqueToType.get(name);
-				name = memberOffsets.get(name).toString();
-				command = "MoveField";
+				if (uniqueToType.containsKey(name))
+				{
+					type = uniqueToType.get(name);
+				}
+				else
+				{
+					try {
+						type = location.getEnclosingScope().getSymbol(location.getName()).getType();
+					} catch (SemanticError e) {
+						
+					}
+				}
+				out.println("Move this, " + regName);
+				regToType.put(regName, type);
+				regName += "." +  memberOffsets.get(name).toString();
+				if (isVariableAssigment)
+					{
+					return regName;
+					}
+				else
+				{
+					String newRegName = "R" + regCounter++;
+					out.println("MoveField " + regName + ", " + newRegName);
+					regToType.put(newRegName, type);
+					return newRegName;
+				}
+			
 			}
 			
-			regToType.put(regName, type);
-			out.println(command + " " + name + ", " + regName);
-			return regName;
 		}
 	}
 	
@@ -367,6 +380,7 @@ public class LirTranslationVisitor extends BaseVisitor
 		String arrName = (String) location.getArray().accept(this);
 		String indexName = (String) location.getIndex().accept(this);
 		
+		
 		String name = "R" + regCounter++;
 		
 		Type newType = null;
@@ -374,22 +388,33 @@ public class LirTranslationVisitor extends BaseVisitor
 		if (arrName.startsWith("R"))
 		{
 			newType = regToType.get(arrName);
+			if (newType == null)
+				newType = regToType.get(arrName.substring(0, arrName.indexOf('[')));
 		}
 		else
 		{
 			newType = uniqueToType.get(arrName);
 		}
 		
-		assert(newType != null);
-		
 		newType = newType.clone();
 		newType.setDimension(newType.getDimension() - 1);
 		
 		regToType.put(name, newType);
 		
-		out.println("MoveArray " + arrName+ "[" + indexName + "], " + name);
-		
-		return name;
+		if (isVariableAssigment)
+		{
+			
+			String command = arrName.contains("[") ? "MoveArray" : "Move";
+			String res = "R" + regCounter++;
+			regToType.put(res, newType);
+			out.println(command + " " + arrName + ", " + res);
+			return res + "[" + indexName + "]";
+		}
+		else
+		{
+			out.println("MoveArray " + arrName+ "[" + indexName + "], " + name);
+			return name;
+		}
 	}
 
 	public Object visit(StaticCall call)
@@ -516,8 +541,11 @@ public class LirTranslationVisitor extends BaseVisitor
 		
 		if (call.isExternal())
 		{
-			funcName += (String)call.getLocation().accept(this) + ".";
-			st = call.getLocation().getEnclosingScope();
+			String locationReg = (String)call.getLocation().accept(this);
+			funcName += locationReg + ".";
+			Type t = regToType.get(locationReg);
+			st = ClassTable.getClassTable(t.getName());
+			//st = call.getLocation().getEnclosingScope();
 		}
 		else
 		{
@@ -569,7 +597,8 @@ public class LirTranslationVisitor extends BaseVisitor
 	{
 		String name = "R" + regCounter++;
 		ICClass icClass = ClassTable.getClassAST(newClass.getName()); 
-		int size = 1 + icClass.getFields().size();
+		ClassSymbolTable cs = ClassTable.getClassTable(newClass.getName());
+		int size = 1 + cs.getFieldCount();
 		size *= 4;
 		
 		out.println("Library __allocateObject(" + size + "), " + name);
@@ -585,9 +614,48 @@ public class LirTranslationVisitor extends BaseVisitor
 	public Object visit(NewArray newArray)
 	{
 		String sizeReg = (String) newArray.getSize().accept(this);
-		out.println("__allocateArray(" + sizeReg + ")");
+		String newReg = "R" + regCounter++;
+		String sizeReg2 = "R" + regCounter++;
+		String resReg = "R" + regCounter++;
+		out.println("Move " + sizeReg + ", " + newReg);
+		out.println("Move " + sizeReg + ", " + sizeReg2);
+		out.println("Mul 4, " + newReg);
+		out.println("Library __allocateArray(" + newReg + "), " + resReg);
 		
-		return true;
+		String counterReg = "R" + regCounter++;
+		out.println("Move 0, " + counterReg);
+		String loopLabel = "_loop_" + labelCounter++;
+		out.println(loopLabel + ":");
+		out.println("MoveArray 0, " + resReg + "[" + counterReg + "]");
+		out.println("Add 1, " + counterReg);
+		out.println("Compare " + counterReg + ", " + sizeReg2);
+		out.println("JumpL " + loopLabel);
+				
+		int dim = newArray.getType().getDimension();
+		
+		if (newArray.getType() instanceof PrimitiveType)
+		{
+			PrimitiveType pt = (PrimitiveType)newArray.getType();
+			
+			if (pt.getType() == DataTypes.BOOLEAN)
+				regToType.put(resReg, new BoolType(dim));
+			else if (pt.getType() == DataTypes.INT)
+				regToType.put(resReg, new IntType(dim));
+			else
+				regToType.put(resReg, new StringType(dim));
+		}
+		else
+		{
+			UserType ut = (UserType)newArray.getType();
+			try {
+				Type regType = ut.getEnclosingScope().getSymbol(ut.getName()).getType();
+				regToType.put(resReg, regType);
+			} catch (SemanticError e) {
+			}
+			
+		}
+		
+		return resReg;
 	}
 
 	public Object visit(Length length)
@@ -629,40 +697,50 @@ public class LirTranslationVisitor extends BaseVisitor
 			}
 			
 			
-			out.println("Move " + second + ", " + resRegister);
+			out.println("Move " + first + ", " + resRegister);
 			regToType.put(resRegister, new IntType());
-			out.println(operation + " " + first + ", " + resRegister);
+			out.println(operation + " " + second + ", " + resRegister);
 			return resRegister;
 		}
 		
 	}
 
+	private String newReg(String old)
+	{
+		String newReg = "R" + regCounter++;
+		out.println("Move " + old + ", " + newReg);
+		return newReg;
+	}
+	
 	public Object visit(LogicalBinaryOp binaryOp)
 	{
 		String first = (String) binaryOp.getFirstOperand().accept(this);
 		
 		String endLabel = "_end_label" + labelCounter++;
 		String trueLabel = "_true_label" + labelCounter++;
-		
+		first = newReg(first);
 		if (binaryOp.getOperator()==BinaryOps.LAND)
 		{
-			out.println("Comapre 0, "+ first);
+			out.println("Compare 0, "+ first);
 			out.println("JumpTrue "+ endLabel);
 			String second = (String) binaryOp.getSecondOperand().accept(this);
+			second = newReg(second); 
 			out.println("And " + second + ", " + first);
 			out.println(endLabel + ":");
 		}	
 		else if (binaryOp.getOperator()==BinaryOps.LOR)
 		{
-			out.println("Comapre 1, "+ first);
+			out.println("Compare 1, "+ first);
 			out.println("JumpTrue "+ endLabel);
 			String second = (String) binaryOp.getSecondOperand().accept(this);
+			second = newReg(second);
 			out.println("Or " + second + ", " + first);
 			out.println(endLabel + ":");
 		}
 		else if (binaryOp.getOperator()==BinaryOps.EQUAL)
 		{
 			String second = (String) binaryOp.getSecondOperand().accept(this);
+			second = newReg(second);
 			out.println("Compare " + second +", "+ first);
 			out.println("JumpTrue "+ trueLabel);
 			out.println("Move 0, "+ first);
@@ -674,6 +752,7 @@ public class LirTranslationVisitor extends BaseVisitor
 		else if (binaryOp.getOperator()==BinaryOps.NEQUAL)
 		{
 			String second = (String) binaryOp.getSecondOperand().accept(this);
+			second = newReg(second);
 			out.println("Compare " + second +", "+ first);
 			out.println("JumpFalse "+ trueLabel);
 			out.println("Move 0, "+ first);
@@ -685,6 +764,7 @@ public class LirTranslationVisitor extends BaseVisitor
 		else if (binaryOp.getOperator()==BinaryOps.LT)
 		{
 			String second = (String) binaryOp.getSecondOperand().accept(this);
+			second = newReg(second);
 			out.println("Compare " + second +", "+ first);
 			out.println("JumpL "+ trueLabel);
 			out.println("Move 0, "+ first);
@@ -696,6 +776,7 @@ public class LirTranslationVisitor extends BaseVisitor
 		else if (binaryOp.getOperator()==BinaryOps.LTE)
 		{
 			String second = (String) binaryOp.getSecondOperand().accept(this);
+			second = newReg(second);
 			out.println("Compare " + second +", "+ first);
 			out.println("JumpLE "+ trueLabel);
 			out.println("Move 0, "+ first);
@@ -707,6 +788,7 @@ public class LirTranslationVisitor extends BaseVisitor
 		else if (binaryOp.getOperator()==BinaryOps.GT)
 		{
 			String second = (String) binaryOp.getSecondOperand().accept(this);
+			second = newReg(second);
 			out.println("Compare " + second +", "+ first);
 			out.println("JumpG "+ trueLabel);
 			out.println("Move 0, "+ first);
@@ -718,6 +800,7 @@ public class LirTranslationVisitor extends BaseVisitor
 		else if (binaryOp.getOperator()==BinaryOps.GTE)
 		{
 			String second = (String) binaryOp.getSecondOperand().accept(this);
+			second = newReg(second);
 			out.println("Compare " + second +", "+ first);
 			out.println("JumpGE "+ trueLabel);
 			out.println("Move 0, "+ first);
@@ -732,6 +815,7 @@ public class LirTranslationVisitor extends BaseVisitor
 	public Object visit(MathUnaryOp unaryOp)
 	{
 		String result = (String) unaryOp.getOperand().accept(this);
+		result = newReg(result);
 		out.println("Neg "+ result);
 		
 		return result;
@@ -740,7 +824,18 @@ public class LirTranslationVisitor extends BaseVisitor
 	public Object visit(LogicalUnaryOp unaryOp)
 	{
 		String result = (String) unaryOp.getOperand().accept(this);
-		out.println("Not " + result);
+		result = newReg(result);
+		String falseLabel = "_false_label_" + labelCounter++;
+		String endLabel = "_end_Label_" + labelCounter++;
+		out.println("Compare 0, " + result);
+		out.println("JumpTrue " + falseLabel);
+		out.println("Move 0, " + result);
+		out.println("Jump " + endLabel);
+		out.println(falseLabel+ ":");
+		out.println("Move 1, " + result);
+		out.println(endLabel+ ":");
+		
+		//	out.println("Not " + result);
 		
 		return result;
 	}

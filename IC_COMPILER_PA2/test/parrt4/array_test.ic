@@ -1,0 +1,21 @@
+class A
+{
+	
+	
+	static void main(string[] args)
+	{
+		int x = 100;
+		int[] arr = new int[5];
+		arr[0] = 2;
+		arr[1] = x;
+		arr[2] = 3; 
+		arr[3] = x + arr[2];
+		arr[4] = arr[0] + arr[1];
+		
+		Library.println(Library.itos(arr[0]));
+		Library.println(Library.itos(arr[1]));
+		Library.println(Library.itos(arr[2]));
+		Library.println(Library.itos(arr[3]));
+		Library.println(Library.itos(arr[4]));
+	}
+}

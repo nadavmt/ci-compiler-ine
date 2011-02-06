@@ -95,7 +95,13 @@ public abstract class SymbolTable {
 					if (s.GetOpCount() <= operNum)
 						return t;
 				}
-				
+				else if (t.symbolExists(name.substring(name.lastIndexOf('_')+1)))
+				{
+					s = t.getSymbol(name.substring(name.lastIndexOf('_')+1));
+					if (s.GetOpCount() <= operNum)
+						return t;
+					
+				}
 				t = t.getParent();
 			}
 

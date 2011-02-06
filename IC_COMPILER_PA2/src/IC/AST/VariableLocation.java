@@ -1,5 +1,6 @@
 package IC.AST;
 
+import IC.SemanticAnalysis.ClassType;
 import IC.SemanticAnalysis.SymbolTable;
 
 /**
@@ -62,5 +63,10 @@ public class VariableLocation extends Location {
 		SymbolTable t = this.getEnclosingScope();
 		t = t.findSymbolTable(name,operNum);		
 		name = "_" + t.getId() + "_" + name;
+	}
+
+	public void updateUniqueExternalName(String ct, int operationCounter) {
+		name = "_" + ct + "_" + name;
+		
 	}
 }

@@ -17,6 +17,11 @@ public class ClassSymbolTable extends SymbolTable {
 		this.isStatic.put(id, isStatic);	
 	}
 	
+	public int getFieldCount()
+	{
+		return dispatchTable.getFieldCount();
+	}
+	
 	public boolean isStaticMethod(String id)
 	{
 		return isStatic.get(id);

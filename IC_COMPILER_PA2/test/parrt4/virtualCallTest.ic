@@ -1,0 +1,54 @@
+class One{
+	int x;
+	void init()
+	{
+	this.x = 4;
+	}
+}
+
+class Two extends One{
+	void init(){
+		this.x = 5;
+	}
+	
+	int plus(){
+		this.x = this.x + 1;
+		int j = this.x;
+		return j;
+	}
+
+	int minus(){
+		this.x = this.x - 1;
+		int j = this.x;
+		return j;
+	}
+}
+
+class C{
+	static void main(string[] args){
+		One tmp = new Two();
+		
+		
+		tmp.init();
+		
+		Library.print("Initial value: ");
+		Library.printi(tmp.x); 
+		Library.println("");
+
+		C.printer(tmp.x + 1, tmp.x, tmp.x - 1);
+	}
+
+	static void printer(int x1, int x2, int x3){
+		Library.print("x1 was: ");
+		Library.printi(x1);
+		Library.println("");
+
+		Library.print("x2 was: ");
+		Library.printi(x2);
+		Library.println("");
+
+		Library.print("x3 was: ");
+		Library.printi(x3);
+		Library.println("");
+	}
+}
